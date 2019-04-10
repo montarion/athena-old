@@ -1,0 +1,5 @@
+Version screenshots can be found in /home/pi/Pictures/UI/
+23-01-19 - Version 0.2: Added anime posters to function as clickable links.
+24-01-19 = Version 0.2.1: Added animations to anime posters.
+30-01-19 = Version 0.2.3: Added shadow and text to anime posters, added gatekeeper function, and added video placeholder. oh and motd picture becomes the background.
+09-02-19 = Version 0.2.5: Added "Connected" box to show who is connected to the server. need to filter "None" still

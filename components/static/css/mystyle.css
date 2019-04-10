@@ -1,0 +1,179 @@
+body {
+    /*background-color: #0a2551;*/
+    background: no-repeat center top fixed;
+    background-color: #514e4e;
+    color: white;
+    background-size: cover;
+}
+
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+/*for links*/
+a, a:hover, a:active, a:visited { 
+    color: white;
+}
+.info {
+    grid-area: inf;
+    border-radius: 2px;
+    background-color: #1dad27;
+    height:100px;
+    align-items:center;
+
+}
+.anime {
+    grid-area: an;
+    border-radius: 2px;
+    /*background-color: #1d6ae5;*/
+    background-color: #cc2c2c;
+    margin-top:10px;
+    margin-right:10px;
+    width:380px;
+    max-width:500px;
+    min-height:800px;
+    display: flex;
+    flex-flow: row wrap;
+    align-items:center;
+    justify-content: center;
+    animation: slide-right 1.4s;
+    position: relative;
+    text-align: center;
+}
+
+.anime>.container{
+    margin-top:0px;
+    margin-bottom:0px;
+    height:496px;
+    width:350px;
+    border-radius:5px;
+    /*animation: fade-in 1.3s;*/
+    animation-delay: 0.2s;
+}
+.image{
+    margin-top: 10px;
+    border-radius: 5px;
+}
+.centertext{
+    position: absolute;
+    top: 8px;
+    right: 50%;
+}
+.tinted {
+  filter: brightness(50%);
+}
+.gatekeeper {
+    grid-area: gk;
+    border-radius: 2px;
+    background-color: #1d6ae5;
+    margin-top:10px;
+    margin-left:20px;
+    margin-right: 5px;
+    height:80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width:400px;
+}
+.video {
+    grid-area: vd;
+    margin-top: 10px;
+    margin-left: 20px;
+    border-radius: 2px;
+    background-color: green;
+    height: 300px;
+    width: 400px;
+    animation-delay: 2.5s
+    animation: fade-in 1s;
+}
+.fly {
+    margin-right: 20px;
+    margin-left: 20px;
+    border-style: none;
+    animation: slide-left 2s;
+    width:100%;
+    overflow:hidden;
+}
+.connected {
+    grid-area: con;
+    border-radius: 2px;
+    background-color: #1d6ae5;
+    margin-top:10px;
+    height:80px;
+    align-items:center;
+    min-width:400px;
+}
+.slider {
+    overflow-y: hidden;
+    overflow-x: hidden;
+    max-height: 500px; /* approximate max height */
+    max-width: 400px;
+    border-radius: 5px;
+    transition-property: all;
+    transition-duration: .7s;
+    transition-timing-function: cubic-bezier(0, 1, 0.5, 1); 
+    width:100%; 
+    height:100%;
+    animation:fade-in 3s;
+}
+.vidframe {
+    margins-top: 85px;
+    margins-left: 25px;
+
+}
+.slider.closed {
+    max-height: 160px;
+    max-width: 350px;
+}
+.slider.nonactive{
+    max-height: 80px;
+    max-width: 350px;
+}
+.wrapper {
+    display: grid;
+    grid-auto-rows: minmax(4px, auto);
+    grid-template-areas: 
+      "an   .  gk con"
+      "an   .  vd   ."
+      "an   .  .   .";
+}
+@keyframes slide-left {
+  from {
+    margin-left: 100%;
+    width: 300%; 
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+@keyframes slide-down {
+  from {
+    margin-top: -100%;
+    height: 300%; 
+  }
+
+  to {
+    margin-top: 0%;
+    height: 100%;
+  }
+}
+@keyframes slide-right {
+  from {
+    margin-left: -100%;
+    width: 300%; 
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+@keyframes fade-in
+{
+  from {opacity:0; top:-55px;}
+  to {opacity:1; top:0;}
+}

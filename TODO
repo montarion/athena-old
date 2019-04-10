@@ -1,0 +1,6 @@
+DONE-UI: Add text(title) to anime and like a shadow. see masterani.me for inspiration. move to v0.3 when done
+08-02-19 - NETWORK: Rework network code using Select. Scratch that, use redis to remember who is connected.
+    FINISHED on 09-02-19
+12-02-19 - APP: Figure out why app cannot send data to server
+    FINISHED on 12-02-19: It wasn't in a proper thread.
+23-02-19 - SERVER: implement scheduled jobs using cron(inside python) and the standalone thing

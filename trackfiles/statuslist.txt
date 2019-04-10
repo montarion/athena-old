@@ -1,0 +1,1 @@
+{"jamiro": "home", "kaylett": "away", "mama": "home"}
