@@ -11,13 +11,14 @@ from components.gatekeeper import gatekeeper
 #t4 = threading.Thread(target=modules().filereader).start()
 
 t0 = threading.Thread(target=gatekeeper().watch).start()
-sleep(3)
-t1 = threading.Thread(target=site().runsite).start()
 #sleep(3)
+t1 = threading.Thread(target=site().runsite).start()
+sleep(1)
 t2 = threading.Thread(target=server().listen).start()
 sleep(3)
 t3 = threading.Thread(target=modules().standard).start()
-sleep(3)
+print("started main")
+sleep(2)
 t4 = threading.Thread(target=modules().filereader).start()
 
 #t3.start()

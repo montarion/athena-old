@@ -38,11 +38,11 @@ class anime2:
             print(self.RED + msg + self.ENDC)
 
     def search(self, check=True):
-        self.logger("In anime.", "debug")
+        self.logger("Checking anime...", "debug")
         feed = feedparser.parse("https://nyaa.si/?page=rss&c=1_2&f=2")
-        #[PuyaSubs!] Kemurikusa - 08 [1080p][2369253E].mkv
+        #[PuyaSubs!] Kemurikusa - 08 [1080p].mkv
 
-        followlist = ['Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken', 'Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken',"Sword Art Online - Alicization", "One Piece", "One Punch Man S2"]
+        followlist = ['Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken', 'Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken',"Sword Art Online - Alicization", "One Piece", "One Punch Man S2", "Bungou Stray Dogs", 'Bokutachi wa Benkyou ga Dekinai', 'Hitoribocchi no Marumaru Seikatsu', 'Bungou Stray Dogs', 'Bungou Stray Dogs', 'Kenja no Mago', 'Tate no Yuusha no Nariagari', 'One Punch Man S2', 'Isekai Quartet', 'RobiHachi', 'Fairy Gone', 'One Piece', 'Fairy Tail Final Season', 'Bokutachi wa Benkyou ga Dekinai', 'Kimetsu no Yaiba', 'Hitoribocchi no Marumaru Seikatsu', 'Midara na Ao-chan wa Benkyou ga Dekinai', 'Tate no Yuusha no Nariagari', 'Mob Psycho 100 S2', 'One Piece', "Isekai Quartet", "Shingeki no Kyojin S3"]
         try:
             entry = feed.entries[0]
         except IndexError:
@@ -75,16 +75,12 @@ class anime2:
                 if check != airingshow:
                     anime = []
                     self.logger("New show aired!", "info")
-                    # might be useful for the webui
-                    #for _ in range(0,5):
-                        #preanime = string[_]['anime']['title']
-                        #anime.append(preanime)
-                    with open('trackfiles/lastshow.txt', 'w') as f:
-                        f.write(epname)
+                    # download the show
                     self.download(folder, fullname, link)
                 else:
                     self.logger("Already downloaded {}.".format(airingshow), "info")
-                    exit()
+                    return "empty"
+                    #exit()
                 #print(epnum)
                 #print(extension)
                 #print(link)
@@ -93,12 +89,16 @@ class anime2:
                     #followlist.append(title)
             else:
                 self.logger("{} aired.".format(title))
+                return "empty"
         except Exception as e:
             self.logger("Couldn't search \"{}\", probably bad format".format(title), "debug", "red")
+            return "empty"
     def download(self, folder, fullname, link):
 
         #check if folder exists:
-        truepath = "/media/raspidisk/files/anime/{}".format(r"\ ".join(folder.split()))
+        root =  "/media/raspidisk/files/anime/"
+        truepath = os.path.join(root, "\ ".join(folder.split()))
+
         check = os.path.isdir(truepath)
         if not check:
             #folderpath = "/media/raspidisk/files/anime/{}".format(folder)
@@ -127,6 +127,9 @@ class anime2:
         # for auto name change, login to the deluge webui, go to settings > executor,
         # and write a script that changes the name into desired. do a simple ls -l to get newest folder, 
         # then go in and change the name.
+        with open('trackfiles/lastshow.txt', 'w') as f:
+            f.write(epname)
+
 
 
 #anime2().search(check=True)

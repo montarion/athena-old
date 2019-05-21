@@ -1,1 +1,1 @@
-{"jamiro": "home", "kaylett": "away", "mama": "home"}
+{"jamiro": "away", "kaylett": "away", "mama": "away"}

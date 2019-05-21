@@ -71,6 +71,7 @@ class site:
                 emit(function, {"data":str(data)}, namespace="/", broadcast=True)
 
         def updater(function):
+            self.logger("updating {}".format(function))
             data = self.r.get(function).decode("utf-8")
             if data != self.olddata[function]:
                 self.logger("new data!", colour="blue")

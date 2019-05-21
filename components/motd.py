@@ -1,5 +1,5 @@
 from time import sleep
-import requests, csv, requests, praw, json, calendar, base64, urllib.request, os, re, datetime, redis
+import requests, csv, praw, json, calendar, base64, urllib.request, os, re, datetime, redis
 from random import *
 from components.credentials import credentials
 

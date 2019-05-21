@@ -1,4 +1,4 @@
-import os, json, redis, inspect, datetime
+import os, json, redis, inspect, datetime, sys
 from time import sleep
 
 # simple function to ask all necessary credentials
@@ -11,8 +11,12 @@ class credentials:
         self.RED = '\033[91m'
         self.ENDC = '\033[0m'
         self.r = redis.Redis(host='localhost', port=6379, db=0)
-
-
+        if not os.path.isfile("trackfiles/token.txt"):
+            self.logger("Password file not found!\n you must have a password file in \"trackfiles\" called \"token\" "\
+                        "that contains a json dictionary looking like this:\n\n"\
+                        "{\"reddit\":[\"username\", \"password\"]}")
+            sys.exit()
+            
     def logger(self, msg, type="info", colour="none"):
         msg = str(msg)
         predate = datetime.datetime.now()
@@ -49,4 +53,18 @@ class credentials:
             return "credentials for \"{}\" not found!".format(type)
 
         return creds # list with creds
+
+    def setcreds(self, creddict):
+
+        self.logger("Got request to save {} credentials".format(type))
+        with open("trackfiles/token.txt") as f:
+            passdict = json.loads(f.read())
+
+        passdict.update(creddict)
+        self.logger("Added new credentials.")
+        with open("trackfiles/token.txt", "w") as f:
+            f.write(json.dumps(passdict))
+
+        self.logger("Saved credentials")
+
 

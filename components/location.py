@@ -39,6 +39,8 @@ class location:
 
 
     def search(self, latitude, longtitude):
+        with open ("trackfiles/lastcoordinates.txt", "w") as f:
+            f.write("{},{}".format(latitude, longtitude))
         appID, appCode = credentials().checkcreds("geolocation")
         url = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?app_id={}&app_code={}&mode=retrieveAddresses&prox={},{},5".format(appID, appCode, latitude, longtitude)
         # ---needed conversion---#

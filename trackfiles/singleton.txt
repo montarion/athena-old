@@ -1,1 +1,1 @@
-{"notification": ["greylynx", "practice!", "time for duolingo"]}
+{}
