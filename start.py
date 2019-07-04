@@ -1,7 +1,10 @@
+import eventlet
+#eventlet.monkey_patch()
 import threading
 from time import sleep
 from components.server import server, modules
-from components.site import site
+from components.site import Site
+from components.sitewatcher import watch
 from components.gatekeeper import gatekeeper
 
 #t0 = threading.Thread(target=server().listen).start()
@@ -12,14 +15,14 @@ from components.gatekeeper import gatekeeper
 
 t0 = threading.Thread(target=gatekeeper().watch).start()
 #sleep(3)
-t1 = threading.Thread(target=site().runsite).start()
+t1 = threading.Thread(target=Site().runsite).start()
+t2 = threading.Thread(target=watch().serve).start()
+#sleep(1)
+t3 = threading.Thread(target=server().listen).start()
 sleep(1)
-t2 = threading.Thread(target=server().listen).start()
-sleep(3)
-t3 = threading.Thread(target=modules().standard).start()
-print("started main")
-sleep(2)
-t4 = threading.Thread(target=modules().filereader).start()
+t4 = threading.Thread(target=modules().standard).start()
+sleep(1)
+#t5 = threading.Thread(target=modules().filereader).start()
 
 #t3.start()
 #sleep(5)

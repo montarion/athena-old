@@ -1,5 +1,9 @@
-import os, json, datetime
+import os, json, datetime, sys
 from time import sleep
 
-os.system("deluge-console \"info --sort time_added\" | tail -n 7 | head -n 1 > trackfiles/torrentdone.txt")
+#os.system("touch /home/pi/code/apptests/secondserver/scriptlets/torrentfile.txt")
+
+with open("/home/pi/code/apptests/secondserver/scriptlets/torrentfile.txt", "w") as f:
+    f.write(sys.argv[1])
+
 

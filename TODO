@@ -4,3 +4,9 @@ DONE-UI: Add text(title) to anime and like a shadow. see masterani.me for inspir
 12-02-19 - APP: Figure out why app cannot send data to server
     FINISHED on 12-02-19: It wasn't in a proper thread.
 23-02-19 - SERVER: implement scheduled jobs using cron(inside python) and the standalone thing
+    Finished I think.
+25-06-19 - SITE: figure out why you can't use pubsub and message queues to send stuff to the website.
+    FINSIHED on 26-02-19: I had to patch only the socket library( in site.py)
+26-06-19 - SITE: add a carousel of pictures from /m/takemethere to the background of the site.
+    SCRAPPED, there is no background to see. perhaps do that for tme motd image though.
+01-07-19 - SERVER: figure out how to get a torrent callback on completion

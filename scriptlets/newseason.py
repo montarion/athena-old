@@ -45,7 +45,7 @@ def check(followlist=[]):
 
 
 flist = ['Bokutachi wa Benkyou ga Dekinai', 'Hitoribocchi no Marumaru Seikatsu', 'Bungou Stray Dogs', 'Bungou Stray Dogs', 'Kenja no Mago', 'Tate no Yuusha no Nariagari', 'One Punch Man S2', 'Isekai Quartet', 'RobiHachi', 'Fairy Gone', 'One Piece', 'Fairy Tail Final Season', 'Bokutachi wa Benkyou ga Dekinai', 'Kimetsu no Yaiba', 'Hitoribocchi no Marumaru Seikatsu', 'Tate no Yuusha no Nariagari', 'Mob Psycho 100 S2', 'One Piece', "Shingeki no Kyojin S3"]
-
+#flist = ["Isekai Quartet"]
 # you may subsitute flist with a show or shows of your choice, as long as it's a list.
 check(flist)
 

@@ -1,1 +1,1 @@
-{"00:57:c1:d0:ba:c6":"jamiro", "88:b4:a6:7b:1c:4d":"mama"}
+{"00:00:00:FF:FF:FF":"person1", "00:00:00:FF:FF:FA":"person2"}

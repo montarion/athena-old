@@ -6,7 +6,7 @@ with open("/home/pi/code/apptests/secondserver/trackfiles/singleton.txt") as f:
     olddict = json.loads(tmpolddict)
 
 olddict["motd"] = "empty"
-olddict["notification"] = ["greylynx", "practice!", "time to code!"]
+olddict["notification"] = ["greylynx", "practice!", "time to code!"] #{\"notification\":\[\"greylynx/alerts\", \"practice\", \"time to code~!\"]}
 
 with open("/home/pi/code/apptests/secondserver/trackfiles/singleton.txt", "w") as f:
     f.write(json.dumps(olddict))

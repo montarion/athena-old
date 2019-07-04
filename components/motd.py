@@ -1,6 +1,5 @@
 from time import sleep
-import requests, csv, praw, json, calendar, base64, urllib.request, os, re, datetime, redis
-from random import *
+import requests, csv, praw, json, calendar, base64, urllib.request, os, re, datetime, redis, random
 from components.credentials import credentials
 
 class motd:
@@ -104,20 +103,37 @@ class motd:
             self.headlines.append(news)
         headline = "Today's news is that {0}.".format(self.headlines[0][0])
         self.logger("Got reddit headline", "debug")
+        msg = {"category": "image", "message":imagelink}
+        self.r.publish("SENDMESSAGE", str(msg))
+        #self.r.set("image", imagelink)
+        premsg = {"headline": headline, "newslink": thing.permalink}
+        msg = {"category": "news", "message":premsg}
+        self.r.publish("SENDMESSAGE", str(msg))
+        #self.r.set("news", headline)
         return headline, imagelink
 
     def song(self):
-        vidlist = []        
+        base = "https://www.youtube.com/embed/"
+        vidlist = []
         with open('scriptlets/vidlinks.csv', 'r') as f:
             reader = csv.reader(f, delimiter=',')
             vidlink = list(reader)
-        
-        choice = randint(1, len(vidlink))
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        random.seed(today)
+        choice = random.randint(1, len(vidlink))
+        random.seed()
         songtitle = vidlink[choice][1]
         songlink = vidlink[choice][0]
         songset = ["now", "finally", "lest we forget"]
-        songprep = songset[randint(0, len(songset)-1)] #now, finally, lest we forget
-        songmsg = "And {0}, here is the song of the day:".format(songprep) 
+        songprep = songset[random.randint(0, len(songset)-1)] #now, finally, lest we forget
+        songmsg = "And {0}, here is the song of the day:".format(songprep)
+        id = songlink.split("=")[1]
+        newlink = base + id
+        premsg = {"title":songtitle, "link":newlink, "message":songmsg}
+        msg = {"category": "song", "message":premsg}
+        self.r.publish("SENDMESSAGE", str(msg))
+        self.logger("song premsg" + str(premsg), "debug", "yellow")
+        #self.r.set("song", str(premsg))
         self.logger("Got song stuff", "debug")
         return songmsg, songtitle, songlink
     def weather(self):
@@ -144,7 +160,7 @@ class motd:
             self.tempstat = "a chilly"
             self.tempstat2 = ". Nevertheless,"
         dayset = ["stellar", "awesome", "great", "supercalifragilisticexpialidocious", "amazing"]
-        dayword = dayset[randint(0,len(dayset)-1)] #stellar, awesome
+        dayword = dayset[random.randint(0,len(dayset)-1)] #stellar, awesome
         
         #1
         self.weatherlist.append(temperature) #21
@@ -167,5 +183,9 @@ class motd:
 
         weatherreport = "Good morning! It's {0}, {1} in {2}. We're looking at {3} skies today, and it'll be {4} {5} degrees{6} let's make it a {7} day!".format(dayname.lower(),  date, self.city, skytext.lower(), self.tempstat, \
         str(temperature), self.tempstat2, dayword)
+        msg = {"category": "weather", "message":temperature}
+        self.r.publish("SENDMESSAGE", str(msg))
+        #self.r.set("temperature", temperature)
+        #self.r.set("weather", weather)
         return weatherreport
 

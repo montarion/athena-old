@@ -5,7 +5,7 @@ from flask import Flask
 from blinker import signal
 from flask_socketio import SocketIO, emit
 #from components.anime import anime
-from components.anime2 import anime2
+from components.anime import anime
 from components.motd import motd
 from components.location import location
 from components.whatsappbot import whatsappbot
@@ -27,8 +27,8 @@ class server:
         try:
             self.connecteddict = eval(self.r.get("connected").decode("utf-8"))
         except:
-            self.r.set("connected", "{\"greylynx\"}")
-            self.connecteddict = {"greylynx"}
+            self.r.set("connected", "{\"greylynx\":\"empty\"}")
+            self.connecteddict = {"greylynx":"empty"}
 
 
     def logger(self, msg, type="info", colour="none"):
@@ -63,22 +63,23 @@ class server:
         else:
             try:
                 conn = conndict[id]
-                try:
-                    conn.sendall(bytes(message+STOP, "utf-8"))
-                    #was self.ocnnecteddict["connected"], but that's stupid
-                    if str(self.getname(id)) not in self.connecteddict and self.getname(id) != None:
-                        self.logger("Added id: {} to connected list".format(self.getname(id)), "info", "yellow")
-                        self.connecteddict.append(str(self.getname(id)))
-                        self.r.set("connected", json.dumps(self.connecteddict, sort_keys=True))
-                    return 1
-                except Exception:
-                    if self.getname(id) in self.connecteddict:
-                        self.logger("Removed id: {} from connected list".format(self.getname(id)), "info", "yellow")
-                        self.connecteddict.remove(str(self.getname(id)))
-                        self.r.set("connected", json.dumps(self.connecteddict, sort_keys=True))
-                    return 2
             except KeyError:
                 self.logger("Couldn't find device with id {}".format(id), "alert", "red")
+                return 3
+        try:
+            conn.sendall(bytes(message+STOP, "utf-8"))
+            if str(self.getname(id)) not in self.connecteddict and self.getname(id) != None:
+               self.logger("Added id: {} to connected list".format(self.getname(id)), "info", "yellow")
+               self.connecteddict.append(str(self.getname(id)))
+               self.r.set("connected", json.dumps(self.connecteddict, sort_keys=True))
+               return 1
+        except Exception:
+            if self.getname(id) in self.connecteddict:
+               self.logger("Removed id: {} from connected list".format(self.getname(id)), "info", "yellow")
+               self.connecteddict.remove(str(self.getname(id)))
+               self.r.set("connected", json.dumps(self.connecteddict, sort_keys=True))
+               return 2
+
 
 
     def listen(self):
@@ -94,6 +95,7 @@ class server:
             self.logger("Listening...", colour="yellow")
             (conn, ipaddr) = TCPSock.accept()
             data = str(conn.recv(buf))[10:-1]
+            print(data)
             if len(data) > 1:
                 if data[2] == "!":
                    data = data[2:]
@@ -104,9 +106,10 @@ class server:
                     if data == "!noid":
                         id = self.assign(ipaddr, conn)
                         self.send("000", "!id-{}".format(id), conn)
-                        conn.close()
-                        break
-                    if data[:5] == "!ack-":
+                        self.logger("assigned ID {} to {}".format(id, ipaddr))
+                        #conn.close()
+                        #break
+                    if data[:5] == "!ack":
                         self.logger("last message was received.", "debug", "green")
                     if data[:7] == "!marco-":
                         self.updateconn(data[7:10], conn, ipaddr[0])
@@ -256,7 +259,7 @@ class modules:
         self.ENDC = '\033[0m'
         self.oldconlen = 0
         self.r = redis.Redis(host='localhost', port=6379, db=0)
-        self.connecteddict = eval(self.r.get("connected").decode("utf-8"))
+        self.connecteddict = self.r.get("connected").decode("utf-8")
 
     def logger(self, msg, type="info", colour="none"):
         msg = str(msg)
@@ -310,7 +313,7 @@ class modules:
     def anime(self, update="yes", check=True):
         if update == "yes":
             self.update("anime")
-        animelst = anime2().search(check) # returns string, not a list
+        animelst = anime().search(True) # returns string, not a list
         if animelst != "!failure" and animelst != None and animelst != "empty":
             finalmsg = "!ani-{}".format(animelst)
             for id in self.targetid:
