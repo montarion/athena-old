@@ -1,1 +1,0 @@
-{"00:00:00:FF:FF:FF":"person1", "00:00:00:FF:FF:FA":"person2"}
