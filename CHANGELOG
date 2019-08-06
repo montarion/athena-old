@@ -1,1 +1,2 @@
 12-02-19 - SERVER: Added scheduled motd using crontab, and reworked battery reporting.
+09-07-19 - WEBSITE: added grid system, multiple pages, and a menu

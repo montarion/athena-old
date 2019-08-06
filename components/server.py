@@ -361,7 +361,7 @@ class modules:
         if result == 1:
             self.logger("Asked {} for gps location.".format(server().getname(id)), "debug", "yellow")
         else:
-            self.logger("Can't reach {}".format(server().getname(id)))
+            self.logger("Can't reach {} to ask for gps.".format(server().getname(id)))
 
     def locationcheck(self):
         with open("trackfiles/location.txt") as f:

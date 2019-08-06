@@ -1,4 +1,4 @@
-import os, json, redis, inspect, datetime, sys
+import os, json, redis, inspect, datetime, sys, configobj
 from time import sleep
 
 # simple function to ask all necessary credentials
@@ -11,12 +11,13 @@ class credentials:
         self.RED = '\033[91m'
         self.ENDC = '\033[0m'
         self.r = redis.Redis(host='localhost', port=6379, db=0)
-        if not os.path.isfile("trackfiles/token.txt"):
-            self.logger("Password file not found!\n you must have a password file in \"trackfiles\" called \"token\" "\
-                        "that contains a json dictionary looking like this:\n\n"\
-                        "{\"reddit\":[\"username\", \"password\"]}")
+        self.config = configobj.ConfigObj("settings.ini")
+        #print(self.config["PASSWORD"]["reddit"])
+
+        if not os.path.isfile("settings.ini"):
+            self.logger("Settings file not found!\nPlease go to http://[IP of this machine]/settings to set it up.")
             sys.exit()
-            
+
     def logger(self, msg, type="info", colour="none"):
         msg = str(msg)
         predate = datetime.datetime.now()
@@ -45,11 +46,14 @@ class credentials:
 
     def checkcreds(self, type):
         self.logger("Got request for {} credentials".format(type))
-        with open("trackfiles/token.txt") as f:
-            passdict = json.loads(f.read())
+        credlist = []
+        passdict = self.config["PASSWORD"]
         try:
-            creds = passdict[type]
-        except Keyerror:
+            results = passdict[type]
+            for result in results:
+                credlist.append(results[result])
+            creds = credlist
+        except KeyError:
             return "credentials for \"{}\" not found!".format(type)
 
         return creds # list with creds
@@ -57,8 +61,7 @@ class credentials:
     def setcreds(self, creddict):
 
         self.logger("Got request to save {} credentials".format(type))
-        with open("trackfiles/token.txt") as f:
-            passdict = json.loads(f.read())
+        passdict = json.loads(f.read())
 
         passdict.update(creddict)
         self.logger("Added new credentials.")

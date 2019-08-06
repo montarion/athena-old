@@ -6,11 +6,18 @@ from flask_socketio import SocketIO, emit
 from components.anime import anime
 from components.motd import motd
 from ast import literal_eval as eval
-import datetime, os, logging, threading, traceback, redis, json
+import datetime, os, logging, threading, traceback, redis, json, configobj
 
 
 class Site:
     def __init__(self):
+        self.config = configobj.ConfigObj("settings.ini")
+        self.categories = list(self.config["ENABLED MODULES"].keys())
+        self.settingdict = {"appID": "password-location", "appCode": "password-location", "anime": "anime",
+                            "redditUsername": "password-reddit", "redditClientId":"password-reddit",
+                            "redditPassword": "password-reddit", "gatekeeper":"gatekeeper"}
+        self.updatesettinglist = ["anime", "appID", "appCode", "gatekeeper", "redditUsername", "redditClientId",
+                                  "redditPassword"]
         self.app = Flask(__name__)
         log = logging.getLogger('werkzeug')
         log.disabled = False
@@ -52,62 +59,98 @@ class Site:
 
     def update(self, typelist):
             for category in typelist:
-                self.logger("Getting anime from database", "info", "yellow")
                 if category == "anime":
-                    animelist = self.r.get("anime")
-                    if animelist:
-                        animelist = animelist.decode()
-                        self.socketio.emit("anime", animelist)
-                    else:
-                        self.logger("running anime", "info", "yellow")
-                        animelist = anime().search(False)
+                    self.logger("Getting anime from database", "info", "yellow")
+                    animelist = self.r.get("lastshow")
+                    animelist = animelist.decode()
+                    self.socketio.emit("anime", animelist)
                 if category == "motd":
                     self.logger("Getting motd from database", "info", "yellow")
                     imagelink = self.r.get("image")
                     self.logger("Getting image", "debug", "yellow")
-                    if imagelink:
-                        imagelink = imagelink.decode()
-                        self.logger(imagelink, "debug", "green")
-                        self.socketio.emit("image", imagelink)
+                    imagelink = imagelink.decode()
+                    self.socketio.emit("image", imagelink)
+
                     self.logger("Getting news", "debug", "yellow")
                     news = self.r.get("news")
-                    if news:
-                        news = news.decode()
-                        news = eval(news)
-                        self.logger("Got news", "debug", "green")
-                        self.logger(news, "debug", "green") 
-                        self.logger(type(news), "debug", "green")
-                        self.socketio.emit("news", news)
+                    news = news.decode()
+                    self.logger(news, "alert", "yellow")
+                    self.logger(type(news), "alert", "yellow")
+                    news = eval(news)
+                    self.logger(news, "alert", "yellow")
+                    self.logger(type(news), "alert", "yellow")
+                    #news = json.dumps(news)
+                    self.socketio.emit("news", news)
+
                     self.logger("Getting song", "debug", "yellow")
                     songdict = self.r.get("song")
-                    if songdict:
-                        songdict = songdict.decode()
-                        self.logger("Got song", "debug", "green")
-                        self.socketio.emit("song", songdict)
+                    songdict = songdict.decode()
+                    self.socketio.emit("song", songdict)
+
                     self.logger("Getting temperature", "debug", "yellow")
-                    temperature = self.r.get("weather")
-                    if temperature:
-                        temperature = temperature.decode()
-                        self.logger("Got temperature", "debug", "green")
-                        self.socketio.emit("weather", temperature)
-                    else:
-                        self.logger("running motd", "debug", "red")
-                        motdlst = motd().createmotd(weather="no")
+                    #temperature = self.r.get("weather")
+                    #temperature = temperature.decode()
+                    #self.socketio.emit("weather", temperature)
+
+                    self.logger("running motd", "debug", "red")
+                if category == "settings":
+                    # get settings with values in a dict
+                    self.config = configobj.ConfigObj("settings.ini")
+                    settingdict = {}
+                    for setting in self.updatesettinglist:
+
+                        if setting == "appCode" or setting == "appID":
+                            settingdict.update({setting: self.config["PASSWORD"]["location"][setting]})
+                        elif "reddit" in setting:
+                            settingdict.update({setting: self.config["PASSWORD"]["reddit"][setting]})
+                        else:
+                            settingdict.update({setting: self.config[setting].values()[0]})
+
+                    msg = {"values":settingdict}
+                    self.socketio.emit("settings", msg)
+                #if category == "event":
+                    #self.socketio.emit("event
+            #motdlst = motd().createmotd(weather="no")
 
     def runsite(self):
         self.logger("Started site", "info", "yellow")
         @self.app.route('/')
         def index():
+            #threading.Thread(target=anime().search, args=(False,)).start()
+            #threading.Thread(target=motd().createmotd, kwargs={"weather":"no"}).start()
             return render_template('index.html')
 
-        @self.socketio.on('connect')
-        def test_connect():
-            self.logger("GOT CONNECTION", "alert", "red")
-            threading.Thread(target=self.update, args=(["anime", "motd"],)).start()
+        @self.app.route('/settings')
+        def settings():
+            return render_template('settings.html')
+
+        @self.socketio.on("update")
+        def update(data):
+            data = eval(data)
+            threading.Thread(target=self.update, args=(data,)).start()
 
 
-        @self.socketio.on("msg")
-        def getmsg(msg):
-            pass
+        @self.socketio.on("settingupdate")
+        def settingupdate(msg):
+            for setting in msg:
+                value = msg[setting]
+                category = self.settingdict[setting]
+                if "password-" in category:
+                    category = category.split("-")[1] 
+                    if len(self.config["PASSWORD"].values()) == 0:
+                        self.config["PASSWORD"] = {}
+
+                    if category not in self.config["PASSWORD"]:
+                        self.config["PASSWORD"][category] = {}
+
+                    self.config["PASSWORD"][category][setting] = value
+                else:
+                    if len(self.config[category].values()) == 0:
+                        self.config[category] = {}
+                    self.config[category][setting] = value
+            self.config.filename = "settings.ini"
+            self.config.write()
+            self.logger("settings have been updated.", "info", "green")
+            threading.Thread(target=self.update, args=(["settings"],)).start()
 
         self.socketio.run(self.app, host='0.0.0.0', port=8000)

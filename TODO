@@ -10,3 +10,6 @@ DONE-UI: Add text(title) to anime and like a shadow. see masterani.me for inspir
 26-06-19 - SITE: add a carousel of pictures from /m/takemethere to the background of the site.
     SCRAPPED, there is no background to see. perhaps do that for tme motd image though.
 01-07-19 - SERVER: figure out how to get a torrent callback on completion
+04-07-19 - SERVER: make it so that you can configure things from the site. (which just writes to an ini file)
+    FINISHED I THINK on 09-07-19: I just get the data back and write it out, that's it. figure out how to build it
+                                  if it doesn't exist yet!(at some point)

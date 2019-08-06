@@ -1,4 +1,4 @@
-import feedparser, json, re, redis, os, datetime, subprocess
+import feedparser, json, re, redis, os, datetime, subprocess, configobj
 
 
 class anime:
@@ -9,6 +9,7 @@ class anime:
         self.YELLOW = '\033[93m'
         self.RED = '\033[91m'
         self.ENDC = '\033[0m'
+        self.config = configobj.ConfigObj("settings.ini")
         self.r = redis.Redis(host='localhost', port=6379, db=0)
         self.p = self.r.pubsub()
         self.curdir = os.getcwd()
@@ -42,8 +43,15 @@ class anime:
         self.logger("Checking anime...", "debug")
         feed = feedparser.parse("https://nyaa.si/?page=rss&c=1_2&f=2")
         #[PuyaSubs!] Kemurikusa - 08 [1080p].mkv
+        followlist = []
+        fakelist = self.config["anime"]["anime"].split(",")
+        for show in fakelist:
+            if show[0] == " ":
+                show = show[1:]
+            followlist.append(show)
 
-        followlist = ['Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken', 'Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken',"Sword Art Online - Alicization", "One Piece", "One Punch Man S2", "Bungou Stray Dogs", 'Bokutachi wa Benkyou ga Dekinai', 'Hitoribocchi no Marumaru Seikatsu', 'Bungou Stray Dogs', 'Bungou Stray Dogs', 'Kenja no Mago', 'Tate no Yuusha no Nariagari', 'One Punch Man S2', 'Isekai Quartet', 'RobiHachi', 'Fairy Gone', 'One Piece', 'Fairy Tail Final Season', 'Bokutachi wa Benkyou ga Dekinai', 'Kimetsu no Yaiba', 'Hitoribocchi no Marumaru Seikatsu', 'Midara na Ao-chan wa Benkyou ga Dekinai', 'Tate no Yuusha no Nariagari', 'Mob Psycho 100 S2', 'One Piece', "Isekai Quartet", "Shingeki no Kyojin S3"]
+        #followlist = ['Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken', 'Yakusoku no Neverland', 'Tate no Yuusha no Nariagari', 'Fairy Tail Final Season', 'Mob Psycho 100 S2', 'Tensei Shitara Slime Datta Ken',"Sword Art Online - Alicization", "One Piece", "One Punch Man S2", "Bungou Stray Dogs", 'Bokutachi wa Benkyou ga Dekinai', 'Hitoribocchi no Marumaru Seikatsu', 'Bungou Stray Dogs', 'Bungou Stray Dogs', 'Kenja no Mago', 'Tate no Yuusha no Nariagari', 'One Punch Man S2', 'Isekai Quartet', 'RobiHachi', 'Fairy Gone', 'One Piece', 'Fairy Tail Final Season', 'Bokutachi wa Benkyou ga Dekinai', 'Kimetsu no Yaiba', 'Hitoribocchi no Marumaru Seikatsu', 'Midara na Ao-chan wa Benkyou ga Dekinai', 'Tate no Yuusha no Nariagari', 'Mob Psycho 100 S2', 'One Piece', "Isekai Quartet", "Shingeki no Kyojin S3"]
+
         try:
             entry = feed.entries[0]
         except IndexError:
@@ -71,7 +79,7 @@ class anime:
                 outfile = open('trackfiles/lastshow.txt')
                 if check == False:
                     msg = {"category": "anime", "message":airingshow}
-                    #self.r.set("lastshow", airingshow)
+                    self.r.set("lastshow", airingshow)
                     self.r.publish("SENDMESSAGE", str(msg))
                     return airingshow
                 check = outfile.read()
@@ -79,6 +87,7 @@ class anime:
                 if check != airingshow:
                     anime = []
                     self.logger("New show aired!", "info")
+                    elf.r.set("lastshow", airingshow)
                     msg = {"category": "anime", "message":airingshow}
                     self.r.publish("SENDMESSAGE", str(msg))
                     # download the show
@@ -98,10 +107,11 @@ class anime:
                 #if test == "w":
                     #followlist.append(title)
             else:
-                self.logger("{} aired.".format(title))
+                self.logger("Nothing new.")
                 return "empty"
         except Exception as e:
-            self.logger("Couldn't search \"{}\", probably bad format".format(title), "debug", "red")
+            if e != AttributeError:
+                self.logger(e, "debug", "red")
             return "empty"
     def download(self, folder, fullname, link):
 

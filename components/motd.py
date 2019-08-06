@@ -105,11 +105,12 @@ class motd:
         self.logger("Got reddit headline", "debug")
         msg = {"category": "image", "message":imagelink}
         self.r.publish("SENDMESSAGE", str(msg))
-        #self.r.set("image", imagelink)
+        self.r.set("image", imagelink)
         premsg = {"headline": headline, "newslink": thing.permalink}
         msg = {"category": "news", "message":premsg}
-        self.r.publish("SENDMESSAGE", str(msg))
-        #self.r.set("news", headline)
+        self.r.publish("SENDMESSAGE", str(premsg))
+        self.r.set("news", str(msg))
+        self.r.set("headline", headline)
         return headline, imagelink
 
     def song(self):
@@ -132,8 +133,7 @@ class motd:
         premsg = {"title":songtitle, "link":newlink, "message":songmsg}
         msg = {"category": "song", "message":premsg}
         self.r.publish("SENDMESSAGE", str(msg))
-        self.logger("song premsg" + str(premsg), "debug", "yellow")
-        #self.r.set("song", str(premsg))
+        self.r.set("song", str(premsg))
         self.logger("Got song stuff", "debug")
         return songmsg, songtitle, songlink
     def weather(self):
@@ -185,7 +185,7 @@ class motd:
         str(temperature), self.tempstat2, dayword)
         msg = {"category": "weather", "message":temperature}
         self.r.publish("SENDMESSAGE", str(msg))
-        #self.r.set("temperature", temperature)
+        self.r.set("temperature", temperature)
         #self.r.set("weather", weather)
         return weatherreport
 

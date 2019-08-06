@@ -1,33 +1,118 @@
-<!DOCTYPE html>
-<html>
 <head>
-  <title>testpage</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-  <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css') }}" type="text/css"/>
-  <script src="{{url_for('static', filename='scripts/main.js') }}"></script>
+    <title>test</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width = device-width, initial-scale = 1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
+    <!--<link rel="stylesheet" href="{{url_for('static', filename='css/layout.css') }}" type="text/css"/>-->
+    <link rel="stylesheet" href="{{url_for('static', filename='css/menu.css') }}" type="text/css"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css') }}" type="text/css"/>
+    <script src="{{url_for('static', filename='scripts/menu1.js') }}"></script>
+    <script src="{{url_for('static', filename='scripts/menu2.js') }}"></script>  
+    <script src="{{url_for('static', filename='scripts/main.js') }}"></script>
+
+    
 </head>
+
 <body>
-<div class="grid-container">
-  <div class="container">
-    <div class="motd-image">
-      <p id="motd-image-text">Sorry, no image to display</p>
-      <a id="motd-image-link" href=""><img id="motd-image" src=""/></a>
+  <div id="sidemenu-left" class="sidemenu w3-sidebar w3-bar-block">
+    <!--<a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">&times;</a>-->
+    <a href="/" class="w3-bar-item w3-button">Home</a>
+    <a href="/settings" class="w3-bar-item w3-button">Settings</a>
+  </div>
+
+
+
+  <div id="sidemenu-right" class="sidemenu w3-sidebar w3-bar-block">
+    <div id="sidebar" class="sidebar">
     </div>
   </div>
-  <div class="container">
-    <div class="motd-song">
-      <p id="motd-song-text">It seems my tongue was cut</p>
-      <iframe id="motd-song-video" height="100%" width="100%" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+  <div class="main">
+  <div id="notificationbutton" onclick="openMenuRight()" class="notification hidden">
+    <span class="badge"></span>
+  </div>
+
+  <div class="headbar">
+      <div class="column">
+        <div class="card">
+          <div class="cardcontent motd-news">
+            <p>here comes news</p>
+          </div>
+        </div>
+      </div>
+  </div>
+  <div class="statbar">
+      <div class="column">
+        <div class="card">
+          <div class="cardcontent sysstats">
+            <h3>stats</h3>
+            <p>Some stats</p>
+            <p>Some more stats</p>
+          </div>
+        </div>
+      </div>    
+  </div>
+  <hr>
+  <div class="full-1">
+    <div class="column">
+      <div class="card image">
+        <div class="cardcontent image">
+          <a id="motd-image-link" href=""><img id="motd-image" src="https://i.redd.it/w2wd89bk9ab31.jpg" /></a>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="container">
-    <div class="motd-news"' onclick="">The world seems quiet</div>
+  <div class="full-2">
+    <div class="column">
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+    
+      <div class="card">
+        <div class="cardcontent song">
+          and another one
+        </div>
+      </div>
+    
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="container">
-    <div class="anime">I know you're bored, sorry!</div>
+  <div class="full-3">
+    <div class="column">
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+    
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+    
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardcontent anime">
+          and another one
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+  </div>
+  </div>
 
 </body>
 </html>
