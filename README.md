@@ -4,23 +4,23 @@ The goal of this project is to create a personal assistant running on a raspberr
 
 for now features include:
 
-monitor anime
+*monitor anime
 
-monitor series to see when downloaded
+*monitor series to see when downloaded
 
-keep track of a downloaded-but-not-yet-watched list
+*keep track of a downloaded-but-not-yet-watched list
 
-communicate with webfront
+*communicate with webfront
 
-communicate with app
+*communicate with app
 
-have centralised settings, configurable through that webfront
+*have centralised settings, configurable through that webfront
 
-be encrypted
+*be encrypted
 
-generate a message of the day
+*generate a message of the day
 
-integrate with google calender(to see when user is free to work on their not-yet-watched list)
+*integrate with google calender(to see when user is free to work on their not-yet-watched list)
 
 
 Some design principles: the project must be
