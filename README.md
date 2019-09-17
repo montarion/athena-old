@@ -47,13 +47,11 @@ Website(running the website and responding to events that come from it
 
 Modules(monitoring, communication, generating motd)
 
-    Event(responds to and sends out events*, to and from the modules)
-
     Motd(generates message of the day)
 
     Anime(watch for new anime)
 
-    Filewatch(watch for filechanges to see if a file was access)
+    Filewatch(watch for filechanges to see if a file was accessed)
 
     Google(get the calendar)
 
@@ -62,16 +60,5 @@ Modules(monitoring, communication, generating motd)
     Website(host and communicate with the website)
     
 The different classes communicate through redis
-
-*an Event is defined as a specific thing that happens, which requires or invites the user's attention. Examples include:
-
-    - a new show being watchable
-
-    - someone coming home
-
-    - a new unknown client connecting/disconnecting
-
-    - an upcoming google calendar event
-
 
 The above must work reliably, in real world environments, before moving on to adding new functions.
