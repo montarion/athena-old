@@ -1,6 +1,7 @@
 import eventlet
+from eventlet import GreenPool
 eventlet.monkey_patch(socket=True)
-import socketio, json, redis
+import socketio, json, redis, threading
 from time import sleep
 
 from components.motd import motd
@@ -12,12 +13,14 @@ class Networking:
         self.socketio = socketio.Server(client_manager=mgr)
         self.app = socketio.WSGIApp(self.socketio)
         self.r = redis.Redis(host='localhost', port=6379, db=0)
-        self.connectionlist = json.loads(self.r.get("connectionlist").decode())
+        self.connectionlist = {} #json.loads(self.r.get("connectionlist").decode())
+        self.r.set("connectionlist", json.dumps(self.connectionlist))
         self.sidinfo = {}
 
     def addconnection(self, name, sid):
         self.connectionlist = json.loads(self.r.get("connectionlist").decode())
-        self.connectionlist[name] = {"sid": sid, "address":self.sidinfo[sid]}
+        self.connectionlist[name] = {"sid": sid, "address":self.sidinfo[sid]["address"]}
+        self.sidinfo[sid]["name"] = name
         self.r.set("connectionlist", json.dumps(self.connectionlist))
         return 0
 
@@ -29,20 +32,34 @@ class Networking:
         self.socketio.emit("message", data)
         print("sent message")
 
+    def starttimer(self, sid, maxresponsetime = 1):
+        eventlet.sleep(maxresponsetime)
+        if "name" not in self.sidinfo[sid].keys():
+            print("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid))
+            try:
+                self.sidinfo.pop(sid, None)
+                #self.socketio.disconnect(sid)
+            except Exception as e:
+                print("had an error with removing that sid.")
+                print(e)
+        else:
+            name = self.sidinfo[sid]["name"]
+            print("{} followed protocol, status OK.".format(name))
+            self.socketio.emit("socketSUCC", name)
     def runsite(self):
 
         @self.socketio.on("connect")
         def connect(sid, environ):
             print("{} connected!".format(sid))
-            self.sidinfo[sid] = environ["REMOTE_ADDR"]
-            self.socketio.emit("connect", "empty")
+            self.sidinfo[sid] = {"address": environ["REMOTE_ADDR"]}
+            self.socketio.emit("connectmsg", "empty")
             print("emitted")
-
+            GreenPool().spawn(self.starttimer, sid)
         @self.socketio.on("message")
         def message(sid, data):
             print("got data")
             print(data)
-            if type(data) != dict: # for notifications
+            if type(data) != dict: # for whatsapp(bot) notifications
                 data = json.loads(data)
             for key in list(dict(data).keys()):
                 #print(key)
@@ -60,13 +77,16 @@ class Networking:
                     self.socketio.emit("test", "test complete")
                     print("responded to test")
                 if key == "socketACK":
+                    print("!!!GOT SOCKET ACK!!!")
                     name = data[key]
-                    if name != "" and name not in self.connectionlist:
+                    if name != "" and name != ' ' and name not in self.connectionlist:
                         self.addconnection(name, sid)
-                        print("connection with {} established and added to the list.".format(name))
-                        self.socketio.emit("socketSUC", name) #make client respond to that and use name as check
+                        #self.socketio.emit("socketSUC", name) #make client respond to that and use name as check
                     #print(self.getsidbyname(name))
-                    print(self.connectionlist)
+                    #print(self.connectionlist)
+                if key == "socketSUCACK":
+                    name = data[key]
+                    print("connection with {} established and added to the list.".format(name))
                 if key == "journal":
                     journaldict = dict(data[key])
                     time = journaldict["time"]
@@ -88,5 +108,6 @@ class Networking:
 
         #my_logger = logging.getLogger('my-logger')
         #my_logger.setLevel(logging.ERROR)
-        eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 7777)), self.app) #log=my_logger)
+        print("Started server.")
+        eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 7777)), self.app, log=None,log_output=False) #log=my_logger)
 
