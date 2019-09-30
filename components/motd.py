@@ -3,6 +3,8 @@ from components.google import google
 class motd:
     def __init__(self):
         self.location = "Zeist"
+        #self.google = google()
+        #self.isfree = self.google.isfree
 
     def timemsg(self):
         day = datetime.datetime.now(pytz.timezone("Europe/Amsterdam")).strftime("%A")
@@ -28,9 +30,14 @@ class motd:
     def agenda(self):
         print("getting calendar data")
         times, eventlist = google().main()
+        start = eventlist[times[0]]["start"]
+        end = eventlist[times[0]]["end"]
+        now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
+        ongoing = start < now < end
         eventsummary = eventlist[times[0]]["summary"]
-        event = {"time":str(times[0]), "event":eventsummary}
+        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing}
         return event
+
 
     def builder(self, type = ["short", "agenda", "weather"]):
         result = {}

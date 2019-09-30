@@ -14,8 +14,38 @@ class google:
         self.calendars = []
         self.calendar_names = {}
         self.realevents = SortedDict({})
+        self.isfree = False
 
-    def main(self):
+    def timecleaner(self, time):
+        if "+" in time:
+            time = time[::-1].replace(":", "")[::-1]
+            time = datetime.datetime.strptime(time, "%Y-%m-%dT%H%M%S%z")
+        else:
+            time = datetime.datetime.strptime(time, "%Y-%m-%d")
+            time = pytz.timezone("Europe/Amsterdam").localize(time)
+        return time
+
+    def timedifference(self, duration):
+        dursec = duration.total_seconds()
+        days = duration.days()
+        hours = divmod(days[1], 3600)
+        minutes = divmod(hours[1], 60)
+        seconds = divmod(minutes[1], 1)
+        #newtime = "{} {} {} {}".format(days, hours, minutes, seconds)
+        #datetime.datetime.strptime(newtime, 
+        timelist = []
+        if days != 0:
+            timelist.append(days)
+        if hours != 0:
+            timelist.append(hours)
+        if minutes != 0:
+            timelist.append(minutes)
+        if seconds != 0:
+            timelist.append(seconds)
+            #pass
+        return timelist
+
+    def main(self, numberofevents = 1):
         """Shows basic usage of the Google Calendar API.
         Prints the start and name of the next 10 events on the user's calendar.
         """
@@ -65,24 +95,30 @@ class google:
             if not events:
                 #print('No upcoming events found for calendar {}'.format(self.calendar_names[calendar_id]))
                 pass
-            for event in events:
+            for index, event in enumerate(events[:numberofevents]):
                 start = event['start'].get('dateTime', event['start'].get('date'))
+                end = event['end'].get('dateTime', event['end'].get('date'))
+                nextstart = events[index + 1]['start'].get('dateTime', event['start'].get('date'))
+                #print(type(start)
+                #duration = nextstart - start
+                #timelist = timedifference(duration)
                 # print(start)
                 # 2019-08-27T18:30:00+02:00
                 # remove last : from start time
-                if "+" in start:
-                    start = start[::-1].replace(":", "")[::-1]
-                    start = datetime.datetime.strptime(start, "%Y-%m-%dT%H%M%S%z")
-                else:
-                    start = datetime.datetime.strptime(start, "%Y-%m-%d")
-                    start = pytz.timezone("Europe/Amsterdam").localize(start)
+                start = self.timecleaner(start)
+                end = self.timecleaner(end)
                 #print(start)
                 #print(event)
                 #print("START")
                 #print(start)
+                event["start"] = start
+                event["end"] = end
+                #event["until_next"] = timelist # so you know how long it takes until the next event. not implemented on flutter yet.
                 self.realevents[start] = event
                 #print(start, event['summary'])
 
+        now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
+        self.isfree = not (start < now < end)
         sortedlist = list(self.realevents.keys())
         for time in sortedlist:
             eventsummary = self.realevents[time]["summary"]

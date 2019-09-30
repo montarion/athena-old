@@ -16,6 +16,8 @@ class Networking:
         self.connectionlist = {} #json.loads(self.r.get("connectionlist").decode())
         self.r.set("connectionlist", json.dumps(self.connectionlist))
         self.sidinfo = {}
+        # classes
+        self.motd = motd()
 
     def addconnection(self, name, sid):
         self.connectionlist = json.loads(self.r.get("connectionlist").decode())
@@ -32,7 +34,7 @@ class Networking:
         self.socketio.emit("message", data)
         print("sent message")
 
-    def starttimer(self, sid, maxresponsetime = 1):
+    def starttimer(self, sid, maxresponsetime = 3):
         eventlet.sleep(maxresponsetime)
         if "name" not in self.sidinfo[sid].keys():
             print("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid))
@@ -68,7 +70,7 @@ class Networking:
                     print("got motd request")
                     types = data[key]
                     print(types)
-                    result = motd().builder(types)
+                    result = self.motd.builder(types)
                     msg = json.dumps({"motd": result})
                     self.socketio.emit("message", msg)
                     print("Sent motd")

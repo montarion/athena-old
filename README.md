@@ -47,13 +47,13 @@ Website(running the website and responding to events that come from it
 
 Modules(monitoring, communication, generating motd)
 
-    Motd(generates message of the day)
+   xMotd(generates message of the day)
 
-    Anime(watch for new anime)
+   xAnime(watch for new anime)
 
     Filewatch(watch for filechanges to see if a file was accessed)
 
-    Google(get the calendar)
+   xGoogle(get the calendar)
 
     Settings(get and set the settings)
 
