@@ -19,7 +19,6 @@ class Settings:
             if type(tmpdict) == dict and index == len(target):
                 index += 1
             else:
-                print(tmpdict)
                 break
         return tmpdict
 
@@ -32,15 +31,9 @@ class Settings:
 
     def setsettings(self, msg):
         # msg looks like {"CREDENTIALS":{"redditusername":"spez", "hereappid":"sdfdsujkh"}, "ANIME": "one punch man, one piece"}
-        print(msg)
-        print(type(msg))
         testdict = {}
         for setting in msg:
-            print(self.config)
-            print(self.config[setting])
             print("changing setting: {} from {} to {}".format(setting, self.config[setting], msg[setting]))
             self.config[setting] = msg[setting]
         
-        print("final!")
-        print(self.config.keys())
         self.config.write()

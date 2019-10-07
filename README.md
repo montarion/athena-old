@@ -55,9 +55,9 @@ Modules(monitoring, communication, generating motd)
 
    xGoogle(get the calendar)
 
-    Settings(get and set the settings)
+   xSettings(get and set the settings)
 
-    Website(host and communicate with the website)
+   xWebsite(host and communicate with the website)
     
 The different classes communicate through redis
 
