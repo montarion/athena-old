@@ -22,7 +22,6 @@ $(document).ready(function() {
         var dict = {"type":"song", "song":ls.song};
         console.log(ls.getItem("song"));
         update(dict);
-
        };
     if ("image" in ls){
         var dict = {"type":"image", "image":ls.image};
@@ -30,6 +29,10 @@ $(document).ready(function() {
         };
     if ("news" in ls){
         var dict = {"type":"news", "news":ls.news};
+        update(dict);
+        };
+    if ("agenda" in ls){
+        var dict = {"type":"agenda", "agenda":ls.agenda};
         update(dict);
         };
   };
@@ -79,6 +82,14 @@ $(document).ready(function() {
     update(dict);
     console.log(dict);
     localStorage.setItem("news", msg);
+  });
+  socket.on("agenda", function(msg){
+    console.log("agenda updated");
+    console.log(msg);
+    var dict = {"type":"agenda", "agenda":msg};
+    update(dict);
+    console.log(dict);
+    localStorage.setItem("agenda", msg);
   });
   socket.on("event", function(msg){
     console.log("GOT EVENT");
@@ -189,7 +200,7 @@ function update(data){
       } else { //image is in portrait
         $('#motd-image').css("width", "auto");
         };
-      };
+      }
     };
   if (data.type == "news"){
     data = data.news;
@@ -199,7 +210,12 @@ function update(data){
     var msg = data.headline;
     var category = "news";
     eventupdate(msg, category);
-
-    };
-};
+    }
+  if (data.type == "agenda"){
+    data = data.agenda;
+    // make data start actual parsed time
+    var msg = data.event + " at: " + data.start;
+    $(".agenda").text(msg);
+    }
+}
 

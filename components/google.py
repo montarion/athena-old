@@ -2,6 +2,7 @@ from __future__ import print_function
 import datetime, pytz
 import pickle
 import os.path
+import traceback
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -26,11 +27,11 @@ class google:
         return time
 
     def timedifference(self, duration):
-        dursec = duration.total_seconds()
-        days = duration.days()
-        hours = divmod(days[1], 3600)
-        minutes = divmod(hours[1], 60)
-        seconds = divmod(minutes[1], 1)
+        print(duration)
+        days, seconds = duration.days, duration.seconds
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
         #newtime = "{} {} {} {}".format(days, hours, minutes, seconds)
         #datetime.datetime.strptime(newtime, 
         timelist = []
@@ -43,6 +44,7 @@ class google:
         if seconds != 0:
             timelist.append(seconds)
             #pass
+        print(timelist)
         return timelist
 
     def main(self, numberofevents = 1):
@@ -95,22 +97,17 @@ class google:
             if not events:
                 #print('No upcoming events found for calendar {}'.format(self.calendar_names[calendar_id]))
                 pass
-            for index, event in enumerate(events[:numberofevents]):
+            for index, event in enumerate(events): #[:numberofevents + 1]):
                 start = event['start'].get('dateTime', event['start'].get('date'))
                 end = event['end'].get('dateTime', event['end'].get('date'))
-                nextstart = events[index + 1]['start'].get('dateTime', event['start'].get('date'))
-                #print(type(start)
-                #duration = nextstart - start
-                #timelist = timedifference(duration)
-                # print(start)
-                # 2019-08-27T18:30:00+02:00
-                # remove last : from start time
+                try:
+                    nextstart = events[index + 1]['start'].get('dateTime', event['start'].get('date'))
+                    nextstart = self.timecleaner(nextstart)
+                    event["nextstart"] = nextstart # when the next event starts
+                except Exception as e:
+                    pass
                 start = self.timecleaner(start)
                 end = self.timecleaner(end)
-                #print(start)
-                #print(event)
-                #print("START")
-                #print(start)
                 event["start"] = start
                 event["end"] = end
                 #event["until_next"] = timelist # so you know how long it takes until the next event. not implemented on flutter yet.

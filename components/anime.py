@@ -16,7 +16,7 @@ class anime:
     def search(self, check=True):
         feed = feedparser.parse("https://nyaa.si/?page=rss&c=1_2&f=2")
         followlist = []
-        fakelist = self.config["anime"]["anime"].split(",")
+        fakelist = self.config["Anime"]["shows"].split(",")
         for show in fakelist:
             if show[0] == " ":
                 show = show[1:]

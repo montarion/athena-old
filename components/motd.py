@@ -1,10 +1,10 @@
-import datetime, redis, pytz
+import datetime, redis, pytz, json
 from components.google import google
 class motd:
     def __init__(self):
         self.location = "Zeist"
-        #self.google = google()
-        #self.isfree = self.google.isfree
+        self.r = redis.Redis(host='localhost', port=6379, db=0)
+
 
     def timemsg(self):
         day = datetime.datetime.now(pytz.timezone("Europe/Amsterdam")).strftime("%A")
@@ -32,10 +32,11 @@ class motd:
         times, eventlist = google().main()
         start = eventlist[times[0]]["start"]
         end = eventlist[times[0]]["end"]
+        nextstart = eventlist[times[0]]["nextstart"]
         now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
         ongoing = start < now < end
         eventsummary = eventlist[times[0]]["summary"]
-        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing}
+        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing, "nextstart": nextstart}
         return event
 
 
@@ -50,4 +51,5 @@ class motd:
         if "weather" in type:
             weather = "it's warm"
             result["weather"] = weather
+        self.r.set("motd", json.dumps(result))
         return result

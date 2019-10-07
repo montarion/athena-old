@@ -48,7 +48,8 @@ class Networking:
             name = self.sidinfo[sid]["name"]
             print("{} followed protocol, status OK.".format(name))
             self.socketio.emit("socketSUCC", name)
-    def runsite(self):
+
+    def runserver(self):
 
         @self.socketio.on("connect")
         def connect(sid, environ):
@@ -89,6 +90,7 @@ class Networking:
                 if key == "socketSUCACK":
                     name = data[key]
                     print("connection with {} established and added to the list.".format(name))
+                    self.motd.builder()
                 if key == "journal":
                     journaldict = dict(data[key])
                     time = journaldict["time"]
