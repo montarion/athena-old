@@ -6,7 +6,7 @@ from time import sleep
 
 from components.motd import motd
 from components.whatsappbot import whatsappbot
-
+from components.modules import Modules
 class Networking:
     def __init__(self):
         mgr = client_manager=socketio.RedisManager("redis://")
@@ -106,6 +106,13 @@ class Networking:
                     notification = notification.strip("[").strip("]").strip(" ").split(",")
                     print(notification)
                     whatsappbot().buildmsg(notification)
+                if key == "location":
+                    data = data[key]
+                    if data["command"] == "geocode":
+                        city = Modules().geocode(data["coords"])
+                        msg = {"command":"result", "location":str(city)}
+                        self.send("location", msg)
+
         @self.socketio.on("event")
         def event(sid, data):
             print("got data")

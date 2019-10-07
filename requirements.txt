@@ -1,3 +1,8 @@
 sortedcontainers
 configobj
 feedparser
+eventlet
+redis
+pytz
+pickle
+socketio

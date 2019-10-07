@@ -36,7 +36,7 @@ class motd:
         now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
         ongoing = start < now < end
         eventsummary = eventlist[times[0]]["summary"]
-        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing, "nextstart": nextstart}
+        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing, "nextstart": str(nextstart)}
         return event
 
 
