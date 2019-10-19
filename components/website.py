@@ -81,9 +81,11 @@ class Website:
                     self.logger("running motd", "debug", "red")
                 if category == "settings":
                     # get settings with values in a dict
+                    print("UPDATING SETTINGS")
                     categorylist = ["Anime", "Gatekeeper", "Credentials"]
                     settingdict = {}
                     for cat in categorylist:
+                        print(cat)
                         result = Settings().getsettings(cat)
                         settingdict.update(result)
                     print(settingdict)

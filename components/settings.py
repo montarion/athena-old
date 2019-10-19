@@ -27,6 +27,7 @@ class Settings:
             result = self.config[category][setting]
         else:
             result = self.config[category]
+            print(result)
         return result
 
     def setsettings(self, msg):

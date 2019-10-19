@@ -45,14 +45,12 @@ class anime:
                 folder = epname
                 link = thing["link"]
                 size = thing["nyaa_size"]
-                outfile = open('trackfiles/lastshow.txt')
                 if check == False:
                     msg = {"category": "anime", "message":airingshow}
                     self.r.set("lastshow", airingshow)
                     self.r.publish("SENDMESSAGE", str(msg))
                     return airingshow
-                check = outfile.read()
-                outfile.close()
+                check = self.r.get("lastshow")
                 if check != airingshow:
                     anime = []
                     self.logger("New show aired!", "info")
@@ -62,9 +60,8 @@ class anime:
                     # download the show
                     self.download(folder, fullname, link)
                     # save current last show
-                    with open("trackfiles/lastshow.txt", "w") as f:
-                        f.write(airingshow)
-                    self.logger("Wrote {} to file.".format(airingshow), "info")
+                    self.r.set("lastshow", airingshow)
+                    self.logger("Wrote {} to database.".format(airingshow), "info")
                 else:
                     self.logger("Already downloaded {}.".format(airingshow), "info")
                     return "empty"

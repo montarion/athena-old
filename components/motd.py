@@ -1,5 +1,5 @@
 import datetime, redis, pytz, json
-from components.google import google
+from components.googlemain import google
 class motd:
     def __init__(self):
         self.location = "Zeist"
@@ -30,13 +30,16 @@ class motd:
     def agenda(self):
         print("getting calendar data")
         times, eventlist = google().main()
-        start = eventlist[times[0]]["start"]
-        end = eventlist[times[0]]["end"]
-        nextstart = eventlist[times[0]]["nextstart"]
+        baseevent = eventlist[times[0]]
+        start = baseevent["start"]
+        end = baseevent["end"]
+        nextstart = baseevent["nextstart"]
         now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
         ongoing = start < now < end
-        eventsummary = eventlist[times[0]]["summary"]
+        eventsummary = baseevent["summary"]
         event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing, "nextstart": str(nextstart)}
+        if "location" in baseevent.keys():
+            event["location"] = baseevent["location"]
         return event
 
 
@@ -46,8 +49,10 @@ class motd:
             shortmotd = self.timemsg()
             result["short"] = shortmotd
         if "agenda" in type:
-            agenda = self.agenda()
-            result["agenda"] = agenda
+            #agenda = self.agenda()
+            #result["agenda"] = agenda
+            # google implementation is currently broken.
+            pass
         if "weather" in type:
             weather = "it's warm"
             result["weather"] = weather
