@@ -45,22 +45,19 @@ class anime:
                 folder = epname
                 link = thing["link"]
                 size = thing["nyaa_size"]
+                msg = {"title":airingshow, "episode":str(epnum)}
                 if check == False:
-                    msg = {"category": "anime", "message":airingshow}
-                    self.r.set("lastshow", airingshow)
-                    self.r.publish("SENDMESSAGE", str(msg))
-                    return airingshow
-                check = self.r.get("lastshow")
+                    self.r.set("lastshow", json.dumps(msg))
+                    return msg
+                check = json.loads(self.r.get("lastshow").decode())["title"]
                 if check != airingshow:
                     anime = []
                     self.logger("New show aired!", "info")
-                    self.r.set("lastshow", airingshow)
-                    msg = {"category": "anime", "message":airingshow}
-                    self.r.publish("SENDMESSAGE", str(msg))
+                    msg = {"title":airingshow, "episode":str(epnum)}
+                    self.r.set("lastshow", json.dumps(msg))
                     # download the show
                     self.download(folder, fullname, link)
                     # save current last show
-                    self.r.set("lastshow", airingshow)
                     self.logger("Wrote {} to database.".format(airingshow), "info")
                 else:
                     self.logger("Already downloaded {}.".format(airingshow), "info")

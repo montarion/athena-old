@@ -6,7 +6,9 @@ from time import sleep
 
 from components.motd import motd
 from components.whatsappbot import whatsappbot
+from components.anime import anime
 from components.modules import Modules
+from components.event import Event
 class Networking:
     def __init__(self):
         mgr = client_manager=socketio.RedisManager("redis://")
@@ -40,7 +42,7 @@ class Networking:
             print("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid))
             try:
                 self.sidinfo.pop(sid, None)
-                #self.socketio.disconnect(sid)
+                self.socketio.disconnect(sid)
             except Exception as e:
                 print("had an error with removing that sid.")
                 print(e)
@@ -70,7 +72,6 @@ class Networking:
                     # get motd
                     print("got motd request")
                     types = data[key]
-                    print(types)
                     result = self.motd.builder(types)
                     msg = json.dumps({"motd": result})
                     self.socketio.emit("message", msg)
@@ -80,9 +81,8 @@ class Networking:
                     self.socketio.emit("test", "test complete")
                     print("responded to test")
                 if key == "socketACK":
-                    print("!!!GOT SOCKET ACK!!!")
                     name = data[key]
-                    if name != "" and name != ' ' and name not in self.connectionlist:
+                    if name != "" and name != ' ': #and name not in self.connectionlist:
                         self.addconnection(name, sid)
                         #self.socketio.emit("socketSUC", name) #make client respond to that and use name as check
                     #print(self.getsidbyname(name))
@@ -109,9 +109,13 @@ class Networking:
                 if key == "location":
                     data = data[key]
                     if data["command"] == "geocode":
+                        print("Got request for reverse geocoding")
                         city = Modules().geocode(data["coords"])
                         msg = {"command":"result", "location":str(city)}
                         self.send("location", msg)
+                if key == "anime":
+                    result = anime().search(check=False)
+                    Event().anime(result)
 
         @self.socketio.on("event")
         def event(sid, data):

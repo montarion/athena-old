@@ -33,11 +33,11 @@ class motd:
         baseevent = eventlist[times[0]]
         start = baseevent["start"]
         end = baseevent["end"]
-        nextstart = baseevent["nextstart"]
+        #nextstart = baseevent["nextstart"]
         now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
         ongoing = start < now < end
         eventsummary = baseevent["summary"]
-        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing, "nextstart": str(nextstart)}
+        event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing}
         if "location" in baseevent.keys():
             event["location"] = baseevent["location"]
         return event
@@ -49,10 +49,8 @@ class motd:
             shortmotd = self.timemsg()
             result["short"] = shortmotd
         if "agenda" in type:
-            #agenda = self.agenda()
-            #result["agenda"] = agenda
-            # google implementation is currently broken.
-            pass
+            agenda = self.agenda()
+            result["agenda"] = agenda
         if "weather" in type:
             weather = "it's warm"
             result["weather"] = weather

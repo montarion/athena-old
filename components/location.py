@@ -30,9 +30,12 @@ class Location:
         prettystring = rtext.replace("\'", "\"")
         goodstring = json.loads(prettystring)
 
-        fulladdr = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["Label"]
-        state = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["State"]
-        city = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["City"]
-        print(fulladdr)
-        #print(state)
+        try:
+            fulladdr = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["Label"]
+            state = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["State"]
+            city = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["City"]
+            #print(fulladdr)
+            #print(state)
+        except:
+            city = "Reverse geocoding failed, please try again."
         return city
