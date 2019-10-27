@@ -6,6 +6,7 @@ import traceback
 import requests
 import json
 import sys
+import configobj
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -14,9 +15,10 @@ from sortedcontainers import SortedDict
 from time import sleep
 
 #### DO NOT CHANGE THESE VALUES ####
-client_id = "922033854442-3mi90ohp0qps2vq92jloa3cb4elb2k0a.apps.googleusercontent.com"
-client_secret = "H92HZ4eCYH4LFbhO32uko-qi"
-#### DO NOT CHANGE THESE VALUES ####
+config = configobj.ConfigObj("settings.ini")
+client_id = config["Credentials"]["googleAppId"]
+client_secret = config["Credentials"]["googleAppSecret"]
+
 
 class google:
     def __init__(self):
@@ -62,7 +64,6 @@ class google:
             }
         url = 'https://accounts.google.com/o/oauth2/device/code'
         response = json.loads(requests.post(url, data=data).text)
-        print(response)
         return response
 
     def poll(self, device_code, interval):
@@ -76,7 +77,6 @@ class google:
         while True:
             response = json.loads(requests.post(url, data=data).text)
             if "access_token" in response.keys():
-                print(response["access_token"])
                 # figure out when the token expires:
                 expiredate = datetime.datetime.now() + datetime.timedelta(seconds=response["expires_in"])
                # fill creds with infomration to figure out if accesstoken is expired or not
@@ -87,7 +87,6 @@ class google:
                     olddict["expires_at"] = str(expiredate)
                     tmpdict = {"installed":olddict}
                     f.write(json.dumps(tmpdict))
-                    print(tmpdict)
                 return olddict["access_token"]
             else:
                 print("not yet..")
@@ -103,9 +102,10 @@ class google:
             }
         url = 'https://oauth2.googleapis.com/token'
         response = json.loads(requests.post(url, data=data).text)
-        print(response)
+        expiredate = datetime.datetime.now() + datetime.timedelta(seconds=response["expires_in"])
         with open("components/google/credentials.json", "w") as f:
             creddict["access_token"] = response["access_token"]
+            creddict["expires_at"] = str(expiredate)
             tmpdict = {"installed":creddict}
             f.write(json.dumps(tmpdict))
         return creddict["access_token"]
@@ -155,7 +155,7 @@ class google:
             for calendar_list_entry in calendar_list['items']:
                 id = calendar_list_entry["id"]
                 name = calendar_list_entry['summary']
-                print("calendar \"{}\" has id: {}".format(name ,id))
+                #print("calendar \"{}\" has id: {}".format(name ,id))
                 self.calendars.append(id)
                 self.calendar_names[id] = name
             page_token = calendar_list.get('nextPageToken')
@@ -165,12 +165,12 @@ class google:
         
         for calendar_id in self.calendars:
             events_result = service.eventList(calendarId=calendar_id, timeMin=now,
-                                            maxResults=2, singleEvents=True,
+                                            maxResults=10, singleEvents=True,
                                             orderBy='startTime')
             events = events_result.get('items', [])
 
             if not events:
-                print('No upcoming events found for calendar {}'.format(self.calendar_names[calendar_id]))
+                #print('No upcoming events found for calendar {}'.format(self.calendar_names[calendar_id]))
                 pass
             for index, event in enumerate(events): #[:numberofevents + 1]):
                 
