@@ -116,6 +116,10 @@ class Networking:
                 if key == "anime":
                     result = anime().search(check=False)
                     Event().anime(result)
+                if key == "calendar":
+                    result = self.motd.builder("calendar")
+                    msg = json.dumps({"motd": result})
+                    self.socketio.emit("message", msg)
 
         @self.socketio.on("event")
         def event(sid, data):

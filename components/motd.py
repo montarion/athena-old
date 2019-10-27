@@ -1,5 +1,6 @@
-import datetime, redis, pytz, json
+import datetime, redis, pytz, json, requests
 from components.googlemain import google
+from components.settings import Settings
 class motd:
     def __init__(self):
         self.location = "Zeist"
@@ -42,17 +43,35 @@ class motd:
             event["location"] = baseevent["location"]
         return event
 
+    def weather(self):
+        print("getting weather data")
+        API_KEY = Settings().getsettings("Credentials","weatherApiKey")
+        baseurl = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}"
+        #city = self.r.get("location")
+        city = "zeist"
+        finalurl = baseurl.format(city, API_KEY)
+        response = json.loads(requests.get(finalurl).text)
+        temperature = response["main"]["temp"]
+        windspeed = response["wind"]["speed"]
+        cloudpercentage = response["clouds"]["all"]
+        rain = dict(response["rain"]).get("1h")
+        if rain == None:
+            rain = "None"
+        icon = response["weather"][0]["icon"]
+        iconurl = "http://openweathermap.org/img/wn/{}@2x.png".format(icon)
+        resultdict = {"temperature": temperature, "windspeed": windspeed, "cloudpercentage": cloudpercentage, "iconurl": iconurl, "rain":rain}
+        return resultdict
 
-    def builder(self, type = ["short", "agenda", "weather"]):
+    def builder(self, type = ["short", "calendar", "weather"]):
         result = {}
         if "short" in type:
             shortmotd = self.timemsg()
             result["short"] = shortmotd
-        if "agenda" in type:
+        if "calendar" in type:
             agenda = self.agenda()
-            result["agenda"] = agenda
+            result["calendar"] = agenda
         if "weather" in type:
-            weather = "it's warm"
+            weather = self.weather()
             result["weather"] = weather
         self.r.set("motd", json.dumps(result))
         return result
