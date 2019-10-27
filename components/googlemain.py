@@ -13,11 +13,12 @@ from google.auth.transport.requests import Request
 from .google.service import Service
 from sortedcontainers import SortedDict
 from time import sleep
+from components.settings import Settings
 
 #### DO NOT CHANGE THESE VALUES ####
-config = configobj.ConfigObj("settings.ini")
-client_id = config["Credentials"]["googleAppId"]
-client_secret = config["Credentials"]["googleAppSecret"]
+
+client_id = Settings().getsettings("Credentials", "googleAppId")
+client_secret = Settings().getsettings("Credentials", "googleAppSecret")
 
 
 class google:
