@@ -8,7 +8,7 @@ from components.motd import motd
 from components.settings import Settings
 from components.logger import logger as mainlogger
 from ast import literal_eval as eval
-import datetime, os, logging, threading, traceback, redis, json, configobj
+import datetime, os, logging, threading, traceback, redis, json, configobj, socket
 
 
 class Website:
