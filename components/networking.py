@@ -106,13 +106,11 @@ class Networking:
                     notification = notification.strip("[").strip("]").strip(" ").split(",")
                     print(notification)
                     whatsappbot().buildmsg(notification)
-                if key == "location":
+                if key == "gpscoords":
                     data = data[key]
-                    if data["command"] == "geocode":
-                        print("Got request for reverse geocoding")
-                        city = Modules().geocode(data["coords"])
-                        msg = {"command":"result", "location":str(city)}
-                        self.send("location", msg)
+                    print("Got current gps coordinates")
+                    city = Modules().geocode(json.loads(data))
+                    self.r.set("location", str(city))
                 if key == "anime":
                     result = anime().search(check=False)
                     Event().anime(result)
