@@ -108,7 +108,13 @@ class Website:
         settingspath = "/settings"
         if setup:
             settingspath = "/"
-            print("SETUP")
+            # get ip
+            gw = os.popen("ip -4 route show default").read().split()
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect((gw[2], 0))
+            ipaddr = s.getsockname()[0]
+            s.close()
+            print("running setup, please go to http://{}:8000 in a browser.".format(ipaddr))
         @self.app.route(settingspath)
         def settings():
             return render_template('settings.html')
