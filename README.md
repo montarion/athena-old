@@ -18,10 +18,11 @@ for now features include:
 
 *be encrypted
 
-*generate a message of the day
-
 *integrate with google calender(to see when user is free to work on their not-yet-watched list)
 
+CHANGELOG
+
+02-11-19: Release Alpha 0.1
 
 Some design principles: the project must be
 
@@ -50,8 +51,6 @@ Modules(monitoring, communication, generating motd)
    xMotd(generates message of the day)
 
    xAnime(watch for new anime)
-
-    Filewatch(watch for filechanges to see if a file was accessed)
 
    xGoogle(get the calendar)
 
