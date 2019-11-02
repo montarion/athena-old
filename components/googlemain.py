@@ -7,9 +7,7 @@ import requests
 import json
 import sys
 import configobj
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+
 from .google.service import Service
 from sortedcontainers import SortedDict
 from time import sleep
