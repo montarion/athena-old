@@ -70,6 +70,7 @@ class motd:
         if "short" in type:
             shortmotd = self.timemsg()
             result["short"] = shortmotd
+            # currently not implemented or requested
         if "calendar" in type:
             agenda = self.agenda()
             result["calendar"] = agenda
