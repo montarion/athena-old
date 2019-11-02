@@ -1,6 +1,6 @@
 from __future__ import print_function
 import datetime, pytz
-import pickle
+
 import os.path
 import traceback
 import requests
