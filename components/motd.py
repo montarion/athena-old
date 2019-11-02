@@ -1,6 +1,7 @@
 import datetime, redis, pytz, json, requests
 from components.googlemain import google
 from components.settings import Settings
+from components.modules import Modules
 class motd:
     def __init__(self):
         self.location = "Zeist"
@@ -47,14 +48,16 @@ class motd:
         print("getting weather data")
         API_KEY = Settings().getsettings("Credentials","weatherApiKey")
         baseurl = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}"
-        #city = self.r.get("location")
-        city = "zeist"
+        city = self.r.get("location")
+        
         finalurl = baseurl.format(city, API_KEY)
         response = json.loads(requests.get(finalurl).text)
         temperature = response["main"]["temp"]
         windspeed = response["wind"]["speed"]
         cloudpercentage = response["clouds"]["all"]
-        rain = dict(response["rain"]).get("1h")
+        rain = response.get("rain")
+        if rain:
+            rain = rain.get("1h")
         if rain == None:
             rain = "None"
         icon = response["weather"][0]["icon"]
@@ -71,6 +74,7 @@ class motd:
             agenda = self.agenda()
             result["calendar"] = agenda
         if "weather" in type:
+            Modules().getlocation()
             weather = self.weather()
             result["weather"] = weather
         self.r.set("motd", json.dumps(result))

@@ -3,7 +3,7 @@ import os
 import socketio, json, redis, threading
 from time import sleep
 
-from components.motd import motd
+
 from components.anime import anime
 from components.settings import Settings
 from components.location import Location
@@ -18,10 +18,10 @@ class Modules:
         while True:
             anime().search()
 
-            sleep(120)
+            sleep(60)
 
     def getlocation(self):
-        data = json.dumps({"location":"request"})
+        data = json.dumps({"location":{"command":"request"}})
         self.socketio.emit("message", data)
 
     def geocode(self, message):
