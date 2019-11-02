@@ -5,7 +5,7 @@ from components.website import Website
 # install redis
 
 print("installing redis backend server..")
-os.system("sudo apt install redis-server")
+os.system("sudo apt install redis-server -y")
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 # check imports
