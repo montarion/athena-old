@@ -5,7 +5,6 @@ import socketio, json, redis, threading
 from time import sleep
 
 from components.motd import motd
-from components.whatsappbot import whatsappbot
 from components.anime import anime
 from components.modules import Modules
 from components.event import Event

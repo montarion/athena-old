@@ -140,3 +140,4 @@ debug.py
 productionenv/
 productionenv
 credentials.json
+settings.ini

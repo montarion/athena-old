@@ -95,16 +95,24 @@ class Website:
                     #self.socketio.emit("event
             #motdlst = motd().createmotd(weather="no")
 
-    def runsite(self):
-        @self.app.route('/')
+    def runsite(self, setup=False):
+        indexpath = "/"
+        if setup:
+            indexpath = "/jklfhdsljkfhdsjklfhsdjlk" # random
+        @self.app.route(indexpath)
         def index():
             #threading.Thread(target=anime().search, args=(False,)).start()
             #threading.Thread(target=motd().createmotd, kwargs={"weather":"no"}).start()
             return render_template('index.html')
 
-        @self.app.route('/settings')
+        settingspath = "/settings"
+        if setup:
+            settingspath = "/"
+            print("SETUP")
+        @self.app.route(settingspath)
         def settings():
             return render_template('settings.html')
+
 
         @self.socketio.on("update")
         def update(data):
