@@ -7,3 +7,5 @@ pytz
 pickle
 socketio
 Unidecode
+flask
+flask-socketio
