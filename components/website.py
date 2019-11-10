@@ -81,14 +81,12 @@ class Website:
                     self.logger("running motd", "debug", "red")
                 if category == "settings":
                     # get settings with values in a dict
-                    print("UPDATING SETTINGS")
+                    self.logger("Updating settings.")
                     categorylist = ["Anime", "Gatekeeper", "Credentials"]
                     settingdict = {}
                     for cat in categorylist:
-                        print(cat)
                         result = Settings().getsettings(cat)
                         settingdict.update(result)
-                    print(settingdict)
                     msg = {"values":settingdict}
                     self.socketio.emit("settings", msg)
                 #if category == "event":
@@ -114,7 +112,7 @@ class Website:
             s.connect((gw[2], 0))
             ipaddr = s.getsockname()[0]
             s.close()
-            print("running setup, please go to http://{}:8000 in a browser.".format(ipaddr))
+            self.logger("running setup, please go to http://{}:8000 in a browser.".format(ipaddr), "alert", "blue")
         @self.app.route(settingspath)
         def settings():
             return render_template('settings.html')
@@ -123,7 +121,6 @@ class Website:
         @self.socketio.on("update")
         def update(data):
             data = eval(data)
-            print(data)
             threading.Thread(target=self.update, args=(data,)).start()
 
 

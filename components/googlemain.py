@@ -12,8 +12,7 @@ from .google.service import Service
 from sortedcontainers import SortedDict
 from time import sleep
 from components.settings import Settings
-
-#### DO NOT CHANGE THESE VALUES ####
+from components.logger import logger as mainlogger
 
 client_id = Settings().getsettings("Credentials", "googleAppId")
 client_secret = Settings().getsettings("Credentials", "googleAppSecret")
@@ -27,6 +26,10 @@ class google:
         self.realevents = SortedDict({})
         self.isfree = False
         self.creds = {}
+        self.tag = "google"
+
+    def logger(self, msg, type="info", colour="none"):
+        mainlogger().logger(self.tag, msg, type, colour)
 
     def timecleaner(self, time):
         if "+" in time:
@@ -38,7 +41,6 @@ class google:
         return time
 
     def timedifference(self, duration):
-        print(duration)
         days, seconds = duration.days, duration.seconds
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
@@ -53,7 +55,6 @@ class google:
         if seconds != 0:
             timelist.append(seconds)
             #pass
-        print(timelist)
         return timelist
 
     def requestusercode(self, client_id):
@@ -88,7 +89,7 @@ class google:
                     f.write(json.dumps(tmpdict))
                 return olddict["access_token"]
             else:
-                print("not yet..")
+                self.logger("not yet..", "debug", "yellow")
                 sleep(interval)
 
     def refreshtoken(self, creddict):
@@ -117,25 +118,25 @@ class google:
         #creddict = json.loads(open("components/google/credentials.json").read())["installed"]
 
         if creds:
-            print("creds found!")
+            self.logger("creds found!", colour="yellow")
             creddict = json.loads(open("components/google/credentials.json").read())["installed"]
             now = datetime.datetime.now()
             expiredate = datetime.datetime.strptime(creddict["expires_at"],"%Y-%m-%d %H:%M:%S.%f")
             if now < expiredate:
-                print("Getting from credentials.json")
+                self.logger("Getting from credentials.json", "debug", "yellow")
                 return creddict["access_token"]
             else:
-                print("creds need to be refreshed!")
+                self.logger("creds need to be refreshed!", "debug", "yellow")
                 creds = self.refreshtoken(creddict)
                 return creds
         # If there are no (valid) credentials available, let the user log in.
         if not creds:
-            print("No creds found!")
+            self.logger("No creds found!", "debug", "red")
             response = self.requestusercode(client_id)
-            print("Please go to {} and enter this code: {}".format(response["verification_url"], response["user_code"]))
+            self.logger("Please go to {} and enter this code: {}".format(response["verification_url"], response["user_code"]), colour="blue")
             device_code, interval = response["device_code"], response["interval"]
             creds = self.poll(device_code, interval)
-            print("Got access token, ready to rumble.")
+            self.logger("Got access token, ready to rumble.", colour="green")
             return creds
                 #creds = flow.run_local_server(port=0)
             # Save the credentials for the next run

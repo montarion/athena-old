@@ -1,12 +1,16 @@
-import datetime, redis, pytz, json, requests
+import datetime, redis, pytz, json, requests, traceback
 from components.googlemain import google
 from components.settings import Settings
 from components.modules import Modules
+from components.logger import logger as mainlogger
 class motd:
     def __init__(self):
         self.location = "Zeist"
         self.r = redis.Redis(host='localhost', port=6379, db=0)
+        self.tag = "motd"
 
+    def logger(self, msg, type="info", colour="none"):
+        mainlogger().logger(self.tag, msg, type, colour)
 
     def timemsg(self):
         day = datetime.datetime.now(pytz.timezone("Europe/Amsterdam")).strftime("%A")
@@ -30,7 +34,7 @@ class motd:
         return message
 
     def agenda(self):
-        print("getting calendar data")
+        self.logger("getting calendar data")
         times, eventlist = google().main()
         baseevent = eventlist[times[0]]
         start = baseevent["start"]
@@ -45,25 +49,30 @@ class motd:
         return event
 
     def weather(self):
-        print("getting weather data")
+        logger("getting weather data")
         API_KEY = Settings().getsettings("Credentials","weatherApiKey")
         baseurl = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}"
         city = self.r.get("location")
         
         finalurl = baseurl.format(city, API_KEY)
         response = json.loads(requests.get(finalurl).text)
-        temperature = response["main"]["temp"]
-        windspeed = response["wind"]["speed"]
-        cloudpercentage = response["clouds"]["all"]
-        rain = response.get("rain")
-        if rain:
-            rain = rain.get("1h")
-        if rain == None:
-            rain = "None"
-        icon = response["weather"][0]["icon"]
-        iconurl = "http://openweathermap.org/img/wn/{}@2x.png".format(icon)
-        resultdict = {"temperature": temperature, "windspeed": windspeed, "cloudpercentage": cloudpercentage, "iconurl": iconurl, "rain":rain}
-        return resultdict
+        try:
+            temperature = response["main"]["temp"]
+            windspeed = response["wind"]["speed"]
+            cloudpercentage = response["clouds"]["all"]
+            rain = response.get("rain")
+            if rain:
+                rain = rain.get("1h")
+            if rain == None:
+                rain = "None"
+            icon = response["weather"][0]["icon"]
+            iconurl = "http://openweathermap.org/img/wn/{}@2x.png".format(icon)
+            resultdict = {"temperature": temperature, "windspeed": windspeed, "cloudpercentage": cloudpercentage, "iconurl": iconurl, "rain":rain}
+            return resultdict
+        except:
+            self.logger(finalurl, colour="red")
+            traceback.print_exc()
+            return {"Failure":"0"} # think of error codes
 
     def builder(self, type = ["short", "calendar", "weather"]):
         result = {}

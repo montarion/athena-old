@@ -8,6 +8,7 @@ from components.motd import motd
 from components.anime import anime
 from components.modules import Modules
 from components.event import Event
+from components.logger import logger as mainlogger
 class Networking:
     def __init__(self):
         mgr = client_manager=socketio.RedisManager("redis://")
@@ -16,9 +17,13 @@ class Networking:
         self.r = redis.Redis(host='localhost', port=6379, db=0)
         self.connectionlist = {} #json.loads(self.r.get("connectionlist").decode())
         self.r.set("connectionlist", json.dumps(self.connectionlist))
+        self.tag = "networking"
         self.sidinfo = {}
         # classes
         self.motd = motd()
+
+    def logger(self, msg, type="info", colour="none"):
+        mainlogger().logger(self.tag, msg, type, colour)
 
     def addconnection(self, name, sid):
         self.connectionlist = json.loads(self.r.get("connectionlist").decode())
@@ -33,52 +38,50 @@ class Networking:
     def send(self, category, message):
         data = json.dumps({category:message})
         self.socketio.emit("message", data)
-        print("sent message")
+        self.logger("sent message: "+str(message))
 
     def starttimer(self, sid, maxresponsetime = 3):
         eventlet.sleep(maxresponsetime)
         if "name" not in self.sidinfo[sid].keys():
-            print("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid))
+            self.logger("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid), "debug", "yellow")
             try:
                 self.sidinfo.pop(sid, None)
                 self.socketio.disconnect(sid)
             except Exception as e:
-                print("had an error with removing that sid.")
-                print(e)
+                self.logger("had an error with removing that sid.", "debug", "red")
+                self.logger(e, "debug", "red")
         else:
             name = self.sidinfo[sid]["name"]
-            print("{} followed protocol, status OK.".format(name))
+            self.logger("{} followed protocol, status OK.".format(name), "info", "green")
             self.socketio.emit("socketSUCC", name)
 
     def runserver(self):
 
         @self.socketio.on("connect")
         def connect(sid, environ):
-            print("{} connected!".format(sid))
+            self.logger("{} connected!".format(sid), colour="green")
             self.sidinfo[sid] = {"address": environ["REMOTE_ADDR"]}
             self.socketio.emit("connectmsg", "empty")
-            print("emitted")
             GreenPool().spawn(self.starttimer, sid)
+
         @self.socketio.on("message")
         def message(sid, data):
-            print("got data")
-            print(data)
+            self.logger(data, "debug", "yellow")
             if type(data) != dict: # for whatsapp(bot) notifications
                 data = json.loads(data)
             for key in list(dict(data).keys()):
-                #print(key)
                 if key == "motd":
                     # get motd
-                    print("got motd request")
+                    self.logger("got motd request", colour="yellow")
                     types = data[key]
                     result = self.motd.builder(types)
                     msg = json.dumps({"motd": result})
                     self.socketio.emit("message", msg)
-                    print("Sent motd")
+                    self.logger("Sent motd")
                 if key == "test":
-                    print("got test request")
+                    self.logger("got test request", colour="yellow")
                     self.socketio.emit("test", "test complete")
-                    print("responded to test")
+                    self.logger("responded to test")
                 if key == "socketACK":
                     name = data[key]
                     if name != "" and name != ' ': #and name not in self.connectionlist:
@@ -88,26 +91,16 @@ class Networking:
                     #print(self.connectionlist)
                 if key == "socketSUCACK":
                     name = data[key]
-                    print("connection with {} established and added to the list.".format(name))
+                    self.logger("connection with {} established and added to the list.".format(name), colour="green")
                     self.motd.builder()
                 if key == "journal":
                     journaldict = dict(data[key])
                     time = journaldict["time"]
                     location = journaldict.get("location")
                     message = journaldict["message"]
-                    print(location)
-                if key == "notification":
-                    print("got new notification!")
-                    notification = (data["notification"])
-                    print(notification)
-                    notification = notification.replace(" ", "")
-                    print(notification)
-                    notification = notification.strip("[").strip("]").strip(" ").split(",")
-                    print(notification)
-                    whatsappbot().buildmsg(notification)
                 if key == "gpscoords":
                     data = data[key]
-                    print("Got current gps coordinates")
+                    self.logger("Got current gps coordinates", colour="yellow")
                     city = Modules().geocode(json.loads(data))
                     self.r.set("location", str(city))
                 if key == "anime":
@@ -115,15 +108,13 @@ class Networking:
                     Event().anime(result)
                 if key == "calendar":
                     result = self.motd.builder("calendar")
-                    msg = json.dumps({"motd": result})
-                    self.socketio.emit("message", msg)
-
-        @self.socketio.on("event")
-        def event(sid, data):
-            print("got data")
+                    self.send("motd", result)
+                if key == "weather":
+                    result = self.motd.builder("weather")
+                    self.send("motd", result)
 
         #my_logger = logging.getLogger('my-logger')
         #my_logger.setLevel(logging.ERROR)
-        print("Started server.")
+        self.logger("Started server.", "alert", "blue")
         eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 7777)), self.app, log=None,log_output=False) #log=my_logger)
 
