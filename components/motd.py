@@ -49,7 +49,7 @@ class motd:
         return event
 
     def weather(self):
-        logger("getting weather data")
+        self.logger("getting weather data")
         API_KEY = Settings().getsettings("Credentials","weatherApiKey")
         baseurl = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}"
         city = self.r.get("location")
