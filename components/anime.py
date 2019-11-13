@@ -1,4 +1,4 @@
-import feedparser, json, re, redis, os, configobj
+import feedparser, json, re, redis, os, configobj, requests
 from sortedcontainers import SortedDict
 from components.logger import logger as mainlogger
 class anime:
@@ -45,7 +45,8 @@ class anime:
                 folder = epname
                 link = thing["link"]
                 size = thing["nyaa_size"]
-                msg = {"title":airingshow, "episode":str(epnum)}
+                imagelink = self.getimage(airingshow)
+                msg = {"title":airingshow, "episode":str(epnum), "imagelink":imagelink}
                 if check == False:
                     self.r.set("lastshow", json.dumps(msg))
                     return msg
@@ -53,7 +54,6 @@ class anime:
                 if check != airingshow:
                     anime = []
                     self.logger("New show aired!", "info")
-                    msg = {"title":airingshow, "episode":str(epnum)}
                     self.r.set("lastshow", json.dumps(msg))
                     # download the show
                     self.download(folder, fullname, link)
@@ -69,6 +69,14 @@ class anime:
             if e != AttributeError:
                 self.logger(e, "debug", "red")
             return "empty"
+
+    def getimage(self, name):
+        query = "query($title: String){Media (search: $title, type: ANIME){ coverImage{large}}}" # this is graphQL, not REST
+        variables = {'title': name}
+        url = 'https://graphql.anilist.co'
+        response = requests.post(url, json={'query': query, 'variables': variables})
+        imageurl = url = json.loads(response.text)["data"]["Media"]["coverImage"]["large"]
+        return imageurl
 
     def download(self, folder, fullname, link):
 
