@@ -4,7 +4,8 @@ feedparser
 eventlet
 redis
 pytz
-socketio
+python-socketio
 Unidecode
 flask
 flask-socketio
+requests

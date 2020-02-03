@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/setup.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="{{url_for('static', filename='scripts/serializeJSON.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.js"></script>
+    <script src="https://unpkg.com/flickity-hash@1/hash.js"></script>
+    <script src="{{url_for('static', filename='scripts/setupnetworking.js') }}"></script>
+    <script src="{{url_for('static', filename='scripts/setup.js') }}"></script>
+
+</head>
+<body>
+
+<div class="main-carousel" id="main"data-flickity='{ "contain": true, "draggable": false, "prevNextButtons": false, "pageDots": false }'>
+  <div class="carousel-cell greeting" id="greeting-cell">
+      <h1 id="greeting-title">Okay, lets get to know you!</h1><br>
+      
+      <form id="greeting" method="POST">
+        <div id="name">
+        What's your name?<br>
+        First name: <input id="fname" type="text" name="fname"><br>
+        Last name: <input id="lname" type="text" name="lname"><br>
+        <input id="greeting-next1" type="button" value="next">
+        </div>
+        <div id="location" >
+          Alright <span id="username">hey</span>!<br>
+          now, where do you live?
+          Street:<input id="location-street" type="text" name="street"><br>
+          City:<input id="location-city" type="text" name="city"><br>
+          <input class="submit" id="greeting-submit" type="button" value="Submit">
+        </div>
+</form>
+    
+  </div>
+  <div class="carousel-cell" id="work-cell">
+  <h1 id="work-title">Time for the boring stuff: work..</h1><br>
+      <form id="work" method="POST">
+        <div id="worklocation">
+        Where do you work?<br>
+        Address: <input id="worklocation" type="text" name="worklocation"><br>
+        <input id="work-next1" type="button" value="next">
+        </div>
+        <div id="buslocation" >
+          Alright, which bus stop would you like to use?<br>
+          <div class="scrollbox" id="busselector">
+              <!--filled by jquery-->
+          </div>
+          <input id="next2" type="button" value="next">
+        </div>
+      <input class="submit" id="greeting-submit" type="button" value="Submit">
+    </form>
+  </div>
+  <div class="carousel-cell"></div>
+  <div class="carousel-cell"></div>
+  <div class="carousel-cell"></div>
+  <div class="carousel-cell"></div>
+
+</div>
+
+</body>
+</html>
+

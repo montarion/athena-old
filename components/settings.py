@@ -19,9 +19,9 @@ class Settings:
 
     def setsettings(self, msg):
         # msg looks like {"CREDENTIALS":{"redditusername":"spez", "hereappid":"sdfdsujkh"}, "ANIME": "one punch man, one piece"}
-        testdict = {}
+        self.logger(msg, "debug", "red")
         for setting in msg:
-            self.logger("Changing setting: {} from {} to {}".format(setting, self.config[setting], msg[setting]), "debug", "blue")
+            self.logger("Changing setting: {} from {} to {}".format(str(setting), str(self.config[setting]), str(msg[setting])), "debug", "blue")
             self.config[setting] = msg[setting]
 
         self.config.write()

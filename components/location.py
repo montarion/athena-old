@@ -13,29 +13,58 @@ class Location:
         self.YELLOW = '\033[93m'
         self.RED = '\033[91m'
         self.ENDC = '\033[0m'
+        self.appID = Settings().getsettings("Credentials", "hereAppID")
+        self.appCode = Settings().getsettings("Credentials", "hereAppCode")
+
 
     def logger(self, msg, type="info", colour="none"):
         mainlogger().logger(self.tag, msg, type, colour)
 
 
-    def search(self, latitude, longtitude):
-        #with open ("trackfiles/lastcoordinates.txt", "w") as f:
-            #f.write("{},{}".format(latitude, longtitude))
-        appID = Settings().getsettings("Credentials", "hereAppID")
-        appCode = Settings().getsettings("Credentials", "hereAppCode")
-        url = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?app_id={}&app_code={}&mode=retrieveAddresses&prox={},{},5".format(appID, appCode, latitude, longtitude)
-        # ---needed conversion---#
-        r = requests.get(url)
-        rtext = str(r.text)
-        prettystring = rtext.replace("\'", "\"")
-        goodstring = json.loads(prettystring)
+    def revgeocode(self, latitude, longtitude):
+        url = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json"
+        parameters = {"app_id": self.appID,
+              "app_code": self.appCode,
+              "mode": "retrieveAddress",
+              "maxresults": "1",
+              "prox": "{},{}".format(latitude, longtitude)}
 
+        # ---needed conversion---#
+        r = requests.get(url, params=parameters).json()
+        old = Settings().getsettings("Location")
         try:
-            fulladdr = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["Label"]
-            state = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["State"]
-            city = goodstring["Response"]["View"][0]["Result"][0]["Location"]["Address"]["City"]
+            fulladdr = r["Response"]["View"][0]["Result"][0]["Location"]["Address"]["Label"]
+            state = r["Response"]["View"][0]["Result"][0]["Location"]["Address"]["State"]
+            city = r["Response"]["View"][0]["Result"][0]["Location"]["Address"]["City"]
             #print(fulladdr)
             #print(state)
-        except:
-            city = "Reverse geocoding failed, please try again."
+            old["full"] = fulladdr
+            old["city"] = city
+            Settings().setsettings({"Location":old})
+            self.logger("UPDATED LOCATION TO: {}".format(old), "alert", "red")
+        except Exception as e:
+            city = old["city"]
+            traceback.print_exc()
         return city
+
+    def geocode(self, address):
+        url = "https://geocoder.api.here.com/6.2/geocode.json"
+        parameters = {"app_id":self.appID,
+                      "app_code":self.appCode,
+                      "searchtext": address}
+        result = requests.get(url, params=parameters).json()
+        coords = result["Response"]["View"][0]["Result"][0]["Location"]["DisplayPosition"]
+        lat = float(coords["Latitude"])
+        lon = float(coords["Longitude"])
+
+        return lat, lon
+    # helper functions
+    def getaddress(self, address):
+        url = "https://geocoder.api.here.com/6.2/geocode.json"
+        parameters = {"app_id":self.appID,
+                      "app_code":self.appCode,
+                      "searchtext": address}
+        result = requests.get(url, params=parameters).json()
+        addressdict = result["Response"]["View"][0]["Result"][0]["Location"]["Address"]
+        addressdict["full"] = addressdict.pop("Label")
+        return addressdict

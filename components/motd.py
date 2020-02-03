@@ -44,15 +44,20 @@ class motd:
         ongoing = start < now < end
         eventsummary = baseevent["summary"]
         event = {"start":str(start), "event":eventsummary, "end":str(end), "ongoing": ongoing}
+        subtext = "start"
         if "location" in baseevent.keys():
+            subtext = "location"
             event["location"] = baseevent["location"]
-        return event
+        interpretation = {"title":"event", "subtext": subtext, "main":{"text":"!parsetime:start"}}
+        resultdict = {"data":event, "metadata":interpretation}
+
+        return resultdict
 
     def weather(self):
         self.logger("getting weather data")
         API_KEY = Settings().getsettings("Credentials","weatherApiKey")
         baseurl = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}"
-        city = self.r.get("location")
+        city = self.r.get("location").decode()
         
         finalurl = baseurl.format(city, API_KEY)
         response = json.loads(requests.get(finalurl).text)
@@ -67,14 +72,18 @@ class motd:
                 rain = "None"
             icon = response["weather"][0]["icon"]
             iconurl = "http://openweathermap.org/img/wn/{}@2x.png".format(icon)
-            resultdict = {"temperature": temperature, "windspeed": windspeed, "cloudpercentage": cloudpercentage, "iconurl": iconurl, "rain":rain}
+            weather = {"temperature": temperature, "windspeed": windspeed, "cloudpercentage": cloudpercentage, "iconurl": iconurl, "rain":rain}
+            interpretation = {"title":"temperature", "subtext": "windspeed", "main":{"image":"iconurl", "test":"test"}}
+            resultdict = {"data":weather, "metadata":interpretation}
+
             return resultdict
-        except:
-            self.logger(finalurl, colour="red")
+        except Exception as e:
+            self.logger("Failed to retreive weather!\nRetrieval URL: "+finalurl, "debug", "red")
             traceback.print_exc()
             return {"Failure":"0"} # think of error codes
 
     def builder(self, type = ["short", "calendar", "weather"]):
+        self.logger(type, "debug", "red")
         result = {}
         if "short" in type:
             shortmotd = self.timemsg()
@@ -87,5 +96,5 @@ class motd:
             Modules().getlocation()
             weather = self.weather()
             result["weather"] = weather
-        self.r.set("motd", json.dumps(result))
+        self.r.set("weather", json.dumps(result))
         return result

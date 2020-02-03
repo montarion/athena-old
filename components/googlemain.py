@@ -191,10 +191,10 @@ class google:
                 #print(start, event['summary'])
 
         now = pytz.timezone("Europe/Amsterdam").localize(datetime.datetime.now())
-        self.isfree = not (start < now < end)
+        #self.isfree = not (start < now < end)
         sortedlist = list(self.realevents.keys())
         for time in sortedlist:
             eventsummary = self.realevents[time]["summary"]
-            #print(time, eventsummary)
+            
             
         return sortedlist, self.realevents

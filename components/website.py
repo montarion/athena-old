@@ -7,6 +7,8 @@ from components.anime import anime
 from components.motd import motd
 from components.settings import Settings
 from components.logger import logger as mainlogger
+from components.location import Location
+from components.transit import Transit
 from ast import literal_eval as eval
 import datetime, os, logging, threading, traceback, redis, json, configobj, socket
 
@@ -37,9 +39,26 @@ class Website:
 
     def logger(self, msg, type="info", colour="none"):
         mainlogger().logger(self.tag, msg, type, colour)
+        
 
-
-
+    def setupupdate(self, typelist):
+        print(typelist)
+        for category in typelist:
+            base = typelist[category]
+            if category == "greeting":
+                fname = base["fname"]
+                lname = base["lname"]
+                street = base["street"]
+                city = base["city"]
+                addressdict = Location().getaddress(street + " " + city)
+                print("{} lives in {}".format(fname, city))
+                setdict = {"firstname": fname,"lastname": lname, "Address":addressdict}
+                Settings().setsettings({"Personalia": setdict})
+                self.logger("Wrote personalia to file!", "info", "green")
+            if category == "busstops":
+                self.logger("Got busstop request", "debug", "yellow")
+                busdict = Transit().getbusstops()
+                self.socketio.emit("bussetup", busdict)
     def update(self, typelist):
             for category in typelist:
                 if category == "anime":
@@ -103,9 +122,12 @@ class Website:
             #threading.Thread(target=motd().createmotd, kwargs={"weather":"no"}).start()
             return render_template('index.html')
 
-        settingspath = "/settings"
+        @self.app.route("/settings")
+        def settings():
+            return render_template("settings.html")
+        setuppath = "/setup"
         if setup:
-            settingspath = "/"
+            setuppath = "/"
             # get ip
             gw = os.popen("ip -4 route show default").read().split()
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -113,10 +135,14 @@ class Website:
             ipaddr = s.getsockname()[0]
             s.close()
             self.logger("running setup, please go to http://{}:8000 in a browser.".format(ipaddr), "alert", "blue")
-        @self.app.route(settingspath)
-        def settings():
-            return render_template('settings.html')
+        @self.app.route(setuppath)
+        def setup():
+            return render_template('setup.html')
 
+
+        @self.socketio.on("setupupdate")
+        def setupupdate(data):
+            threading.Thread(target=self.setupupdate, args=(data,)).start()
 
         @self.socketio.on("update")
         def update(data):

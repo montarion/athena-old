@@ -4,3 +4,8 @@
 04-10-19 - APP: Figured out how to do get location
 07-10-19 - SERVER: Finished settings framework.
 19-10-19 - SERVER: Finished google library rework, now has easier authentication.
+0.1^
+10-11-19 - SERVER: Rewrote code to actually use logging component now.
+14-11-19 - APP: Implemented card-based design.
+10-12-19 - SERVER: Implemented transit component.
+12-01-20 - APP: App now generates cards based on incoming data.

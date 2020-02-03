@@ -55,7 +55,7 @@ body {
 }
 
 .card {
-    box-shadow: 5px 4px 8px 0 rgba(36, 39, 51, 1);
+    /*box-shadow: 5px 4px 8px 0 rgba(36, 39, 51, 1);*/
     padding: 5px;
     margin: 10px 5px;
     text-align: center;
@@ -93,3 +93,21 @@ img {
   transition: 1.2s;
 }
 
+#glow {
+              /* x     y   blur spread color */
+    box-shadow: /* ie */
+                 -3px -6px 4px rgba(255, 255, 255,1), /* top - THE RED SHADOW */
+                 3px  6px  4px rgba(50, 52, 61,0.3), /* bottom */
+                 3px  6px  4px rgba(50, 52, 61,0.3), /* right */
+                 -3px -6px 4px rgba(235, 235, 235,1); /* left */
+    -webkit-box-shadow:
+                 -6px -6px 12px rgba(77, 77, 77,0.3), /* top - THE RED SHADOW */
+                 3px  6px  9px rgba(10, 10, 10,0.05), /* bottom */
+                 3px  6px  9px rgba(10, 10, 10,0.05), /* right */
+                 -6px -6px 12px rgba(77, 77, 77,0.3); /* left */
+    -moz-box-shadow:
+                 0px -9px  10px -8px  rgba(74, 77, 87,0.7), /* top - THE RED SHADOW */
+                 0px  5px  10px  0px  rgba(50, 52, 61,0.3), /* bottom */
+                 5px  0px  10px  0px  rgba(50, 52, 61,0.3), /* right */
+                -5px  0px  10px  0px  rgba(74, 77, 87,0.7); /* left */
+}

@@ -39,17 +39,23 @@ class anime:
             if quality == "[1080p]" and epname in followlist and publisher in self.publishchoice:
                 epname  = sstring.group(2)
                 epnum = sstring.group(3)
+                if epname == "Boku no Hero Academia" and int(epnum) > 63:
+                    epname = "Boku no Hero Academia S4"
+                    epnum = int(epnum) - 63
                 airingshow = epname
                 extension = sstring.group(5)
                 fullname = "{} - {}{}".format(epname, epnum, extension)
                 folder = epname
+                self.recode(folder, fullname)
                 link = thing["link"]
                 size = thing["nyaa_size"]
                 imagelink = self.getimage(airingshow)
                 msg = {"title":airingshow, "episode":str(epnum), "imagelink":imagelink}
+                interpretation = {"title":"title", "subtext": "episode", "main":{"image":"imagelink"}}
+                resultdict = {"data":msg, "metadata":interpretation}
                 if check == False:
                     self.r.set("lastshow", json.dumps(msg))
-                    return msg
+                    return resultdict
                 check = json.loads(self.r.get("lastshow").decode())["title"]
                 if check != airingshow:
                     anime = []
@@ -59,6 +65,7 @@ class anime:
                     self.download(folder, fullname, link)
                     # save current last show
                     self.logger("Wrote {} to database.".format(airingshow), "info")
+                    return resultdict
                 else:
                     self.logger("Already downloaded {}.".format(airingshow), "info")
                     return "empty"
@@ -98,3 +105,9 @@ class anime:
         command = (precommand + r"deluge-console 'add -p {} {}'".format(truepath, link) + "\"")
         testcommand = ("deluge-console " + "info \"{}\"".format(self.title)).split()
         os.system(command)
+
+    def recode(self, folder, fullname):
+        
+        root =  "/raspidisk/files/anime/"
+        fullloc = root+folder+fullname
+        self.logger(fullloc, "alert", "yellow")
