@@ -1,7 +1,8 @@
 sortedcontainers
 configobj
 feedparser
-eventlet
+gevent
+gevent-websocket
 redis
 pytz
 python-socketio
@@ -9,3 +10,8 @@ Unidecode
 flask
 flask-socketio
 requests
+cython
+graphviz
+pydotplus
+matplotlib
+pyopenssl

@@ -14,6 +14,7 @@ class Modules:
     def __init__(self):
         mgr = client_manager=socketio.RedisManager("redis://")
         self.socketio = socketio.Server(client_manager=mgr)
+        self.r = redis.Redis(host='localhost', port=6379, db=0)
         self.tag = "modules"
 
     def logger(self, msg, type="info", colour="none"):
@@ -21,8 +22,13 @@ class Modules:
 
     def standard(self):
         while True:
-            result = anime().search()
-            if result != "empty":
+            self.logger("Running anime!")
+            anime().search()
+            anidict = json.loads(self.r.get("lastshow"))
+            if "title" not in list(anidict.keys()):
+                anime().search(numtocheck="all") # loop through the last week to fill the redis "lastshow" keypair
+                Event().anime()
+            else:
                 Event().anime()
             sleep(60)
 

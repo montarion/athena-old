@@ -1,7 +1,12 @@
 from sklearn import tree
 from six import StringIO
 import pydotplus
-class machinelearning:
+from time import sleep
+import pickle
+from ast import literal_eval as eval
+from components.settings import Settings
+
+class Context:
     def __init__(self):
         self.datasize = 0
         self.trainingsize = 0
@@ -10,44 +15,42 @@ class machinelearning:
         self.inversehumanfeatures = {}
         self.labels = []
         self.getconfirmation = False
+        self.tfeatures = Settings().getdata("MACHINELEARNING", "trainingfeatures")
+        self.tlabels = Settings().getdata("MACHINELEARNING", "traininglabels")
+        self.humanfeatures = Settings().getdata("MACHINELEARNING", "humanfeatures")
+        if self.tfeatures == None:
+            self.tfeatures = []
+            self.tlabels = []
+            self.humanfeatures = {}
 
-        #self.trainingfeatures = [{"colour": "red", "shape": "round", "surface": "glossy"}, {"colour": "green", "shape": "oblong", "surface": "rough"}, {"colour": "green", "shape": "round"}]
-        #self.trainingfeatures = [[0, 1, 2], [3, 4, 5], [3, 1, 9999], {'colour': 'green', 'shape': 'square'}]
-
-        self.trainingfeatures = [{'charging': True, 'chargingplug': 'AC', 'batterypercentage': 45, 'lon': 5.2423, 'lat': 52.1029, 'speed': 2, 'name': '"FRITZ!Box Fon WLAN 7360"', 'state': 'CONNECTED', 'type': 'WIFI'}]
-        self.traininglabels = ["home"]
         self.trainingfeaturesaslist = []
 
 
-
-
-
-
     def convert(self, dataset, processtype = "predicting"):
+        print("Converting...")
+        print(self.humanfeatures)
         for index, data in enumerate(dataset):
             tmplist = []
             if type(data) == dict:
                 for entry in data:
                     value = data[entry]
-
                     if value not in self.humanfeatures:
-
                         if processtype == "predicting":
                             print(f"don't know value {value}")
                             # set flag so I know to ask the user about it
-                            self.getconfirmation = True
                         newvalue = len(self.humanfeatures)
                         tmplist.append(newvalue)
-                        self.humanfeatures[value] = len(self.humanfeatures)
+                        self.humanfeatures[value] = len(self.humanfeatures) 
                         self.inversehumanfeatures[len(self.humanfeatures)] = value
+                        #Settings().setdata({"MACHINELEARNING":{"humanfeatures":self.humanfeatures}})
                     else:
                         newvalue = self.humanfeatures[value]
                         tmplist.append(newvalue)
                 dataset.remove(data)
                 dataset.insert(index, tmplist)
 
-        print(dataset)
-        print(self.humanfeatures)
+        Settings().setdata({"MACHINELEARNING":{"humanfeatures":self.humanfeatures}})
+        print("Done converting..")
         return dataset
 
     def addtotraining(self, numbertoadd):
@@ -56,42 +59,61 @@ class machinelearning:
                 dataset.append(9999)
 
     def normalize(self, dataset, datatype = "normal"):
+        print("Normalizing..")
         if datatype == "normal":
             if len(dataset[0]) > self.trainingsize: # check if new data is larger than training sample(it will be just one set, as a list)
                 self.addtotraining(len(dataset[0]))
                 self.train("retrain")
+        newdataset = []
         for data in dataset:
+            #if type(data) == str:
+            data = eval(str(data))
+            newdataset.append(data)
             if len(data) > self.datasize:
                 self.datasize = len(data)
+        dataset = newdataset
+        trainingdata = Settings().getdata("MACHINELEARNING", "trainingfeatures")
         for data in dataset:
-            while len(data) < self.datasize:
-                data.append(9999)
-
+            print("comparing datalength!")
+            while len(data) != self.datasize:
+                if len(data) < self.datasize:
+                    print("new data is smaller!")
+                    data.append(9999)
+                else:
+                    print("new data is larger!")
+                    for tdata in trainingdata:
+                        while len(data) != len(tdata):
+                            tdata.append(9999)
         if datatype == "training":
             self.trainingsize = self.datasize # set training sample size
+            Settings().setdata({"MACHINELEARNING":{"trainingsize":self.trainingsize}})
             self.trainingfeaturesaslist = dataset
+            Settings().setdata({"MACHINELEARNING":{"normalizeddataset":dataset}})
         return dataset
 
     def train(self, processtype = "normal"):
-        clf = tree.DecisionTreeClassifier()
+        preclf = tree.DecisionTreeClassifier()
         if processtype == "retrain":
-            print("retraining!")
-            dataset = self.trainingfeaturesaslist # use special dataset that had it's samples updated to the correct size
-            print(dataset)
+            print("retraining with new data..")
+            dataset = Settings().getdata("MACHINELEARNING", "normalizeddataset") # use special dataset that had it's samples updated to the correct size
             dataset = self.normalize(dataset, "training")
         else:
-            dataset = self.convert(self.trainingfeatures, "training")
-            print("Done converting..")
+            dataset = self.convert(self.tfeatures, "training")
             dataset = self.normalize(dataset, "training")
 
-        self.clf = clf.fit(dataset, self.traininglabels)
+        clf = preclf.fit(dataset, self.tlabels)
+        with open("data/datamodel.pickle", "wb") as f:
+           pickle.dump(clf, f)
 
     def predict(self, contextinput):
         dataset = self.convert([contextinput], "predicting")
         dataset = self.normalize(dataset)
-        print(dataset)
-        result = self.clf.predict(dataset)[0]
 
+        with open("data/datamodel.pickle", "rb") as f:
+            clf = pickle.load(f)
+        result = clf.predict(dataset)[0]
+        featurenames = Settings().getdata("MACHINELEARNING", "humanfeaturenames")
+        self.visualise(clf, featurenames)
         return result
 
 
@@ -107,11 +129,12 @@ class machinelearning:
                         value[val] = True
                     if val2 == "false":
                         value[val] = False
-                    if val == "lat" or val == "lon":
-                        coordinate = val2.split(".")
+                    if val == "lat" or val == "lon": #  make coordinates 3 decimals
+                        coordinate = str(val2).split(".")
                         decimal = coordinate[1][:4]
                         newcoordinate = float(coordinate[0] + "." + decimal)
                         value[val] = newcoordinate
+                    value[val] = str(value[val])
                 tmpdictlist.append(value)
 
         newdict = {}
@@ -119,32 +142,44 @@ class machinelearning:
             newdict.update(flatdict)
         return newdict
 
-ml = machinelearning()
+    def trainmodel(self, inputdata, inputlabel):
+        print("training model with new info")
+        # flatten data
+        flatinputdata = self.flattencontextdict(inputdata)
+        humanfeaturenames = []
+        for name in flatinputdata:
+            humanfeaturenames.append(name)
+        print(humanfeaturenames)
+        Settings().setdata({"MACHINELEARNING":{"humanfeaturenames":humanfeaturenames}})
+        # get trainingfeatures and labels
+        #self.tfeatures = Settings().getdata("MACHINELEARNING", "trainingfeatures")
+        #self.tlabels = Settings().getdata("MACHINELEARNING", "traininglabels")
+        self.tfeatures.append(flatinputdata)
+        self.tlabels.append(inputlabel)
+        self.train("training")
+        Settings().setdata({"MACHINELEARNING":{"trainingfeatures":self.tfeatures}})
+        Settings().setdata({"MACHINELEARNING":{"traininglabels":self.tlabels}})
+        return "Finished training"
 
-ml.train()
-#contextinput = {"colour": "green", "shape": "square"}
+    def getprediction(self, inputdata):
+        print(f"Using: {inputdata} to predict contextstate")
+        flatinputdata = self.flattencontextdict(inputdata)
+        result = self.predict(flatinputdata)
+        return result
+
+    def visualise(self, clf, featurenames):
+        dot_data = StringIO()
+        tree.export_graphviz(clf, out_file=dot_data, feature_names=featurenames)
+        graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+        graph.write_pdf("ml.pdf")
+
 contextinput = {"system":{"charging":"true","chargingplug":"AC","batterypercentage":45},"location":{"lon":"5.242350914413443","lat":"52.102965044310885","speed":2},"network":{"name":"\"FRITZ!Box Fon WLAN 7360\"","state":"CONNECTED","type":"WIFI"}}
-contextinput = ml.flattencontextdict(contextinput)
-result = ml.predict(contextinput)
-if ml.getconfirmation:
-    answer = input(f"I wasn't sure about the meaning of: {contextinput}. I think it means \"{result}\", is that correct? [Y/n]")
-    if answer.lower() == "yes" or answer.lower() == "y":
-        answerpositive = True
-    else:
-        answerpositive = False
-    ml.trainingfeatures.append(contextinput) # add to the training set anyway
-    if answerpositive:
-        ml.traininglabels.append(result)
-    else:
-        newlabel = input("Alright, then what was it? ")
-        res = input(f"Classifying \"{contextinput}\" as \"{newlabel}\", is that correct? [Y/n]")
-        if res != "n":
-            ml.traininglabels.append(newlabel)
 
-    # because I don't save them:
-    print(ml.trainingfeatures)
-    print(ml.traininglabels)
+#ml = machinelearning()
+#flatinputdata = ml.flattencontextdict(contextinput)
+#ml.trainmodel(flatinputdata, "home")
+#result = ml.predict(flatinputdata)
 
-print(f"\nLooks like you're {result}!")
+#print(f"\nLooks like you're {result}!")
 
 
