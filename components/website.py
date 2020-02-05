@@ -1,5 +1,5 @@
-import eventlet
-eventlet.monkey_patch(socket=True)
+from gevent import monkey
+monkey.patch_socket()
 # Be sure to only patch the socket library!
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
@@ -17,7 +17,7 @@ class Website:
     def __init__(self):
         self.tag = "website"
         self.config = configobj.ConfigObj("settings.ini")
-        self.categories = list(self.config["ENABLED MODULES"].keys())
+        #self.categories = list(self.config["ENABLED MODULES"].keys())
         self.settingdict = {"appID": "password-location", "appCode": "password-location", "anime": "anime",
                             "redditUsername": "password-reddit", "redditClientId":"password-reddit",
                             "redditClientSecret":"password-reddit", "redditPassword": "password-reddit",
@@ -28,7 +28,7 @@ class Website:
         log = logging.getLogger('werkzeug')
         log.disabled = False
         self.app.logger.disabled = False
-        self.socketio = SocketIO(self.app, message_queue='redis://localhost',async_mode="eventlet")
+        self.socketio = SocketIO(self.app, message_queue='redis://localhost',async_mode="gevent")
         self.r = redis.Redis(host='localhost', port=6379, db=0)
         # colours
         self.GREEN = '\033[92m'
@@ -63,6 +63,7 @@ class Website:
             for category in typelist:
                 if category == "anime":
                     self.logger("Getting anime from database", "info", "yellow")
+                    anime().search()
                     animelist = self.r.get("lastshow")
                     animelist = animelist.decode()
                     self.socketio.emit("anime", animelist)

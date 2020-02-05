@@ -1,6 +1,8 @@
-import eventlet
-from eventlet import GreenPool
-eventlet.monkey_patch(socket=True)
+from gevent import monkey, pywsgi, spawn
+import gevent
+from geventwebsocket.handler import WebSocketHandler
+monkey.patch_all(Thread=False)
+
 import socketio, json, redis, threading
 from time import sleep
 
@@ -11,10 +13,13 @@ from components.event import Event
 from components.logger import logger as mainlogger
 from components.transit import Transit
 from ast import literal_eval as eval
+from engineio.payload import Payload
+#from engineio.async_drivers import gevent
 class Networking:
     def __init__(self):
         mgr = client_manager=socketio.RedisManager("redis://")
-        self.socketio = socketio.Server(client_manager=mgr)
+        Payload.max_decode_packets = 500
+        self.socketio = socketio.Server(async_mode="gevent", client_manager=mgr)
         self.app = socketio.WSGIApp(self.socketio)
         self.r = redis.Redis(host='localhost', port=6379, db=0)
         self.connectionlist = {} #json.loads(self.r.get("connectionlist").decode())
@@ -50,7 +55,7 @@ class Networking:
             self.logger("couldn't send message: "+str(message), "alert", "red")
 
     def starttimer(self, sid, maxresponsetime = 3):
-        eventlet.sleep(maxresponsetime)
+        gevent.sleep(maxresponsetime)
         if "name" not in self.sidinfo[sid].keys():
             self.logger("{} with sid {} didn't follow protocol, removing.".format(self.sidinfo[sid]["address"], sid), "debug", "yellow")
             try:
@@ -70,12 +75,12 @@ class Networking:
             self.logger("{} connected!".format(sid), colour="green")
             self.sidinfo[sid] = {"address": environ["REMOTE_ADDR"]}
             self.socketio.emit("connectmsg", "empty")
-            GreenPool().spawn(self.starttimer, sid)
+            spawn(self.starttimer, sid) # is a gevent function
             self.logger("finish connect")
 
         @self.socketio.on("message")
         def message(sid, data):
-            self.logger(data, "debug", "yellow")
+            #self.logger(data, "debug", "yellow")
             if type(data) != dict: # for whatsapp(bot) notifications
                 data = json.loads(data)
             for key in list(dict(data).keys()):
@@ -138,7 +143,6 @@ class Networking:
                     self.tasklist.append(key)
                     anime().search(check=False)
                     self.logger("Sent anime to Event handler.", "debug", "yellow")
-                    self.logger("TEMPORARILY DISABLED ANIME RESPONSE")
                     sendanime = True
                     if sendanime:
                         Event().anime()
@@ -169,7 +173,7 @@ class Networking:
                     self.tasklist.remove(key)
                     self.logger("finished {}. tasklist is: {}".format(key, self.tasklist), "alert", "blue")
                 if key == "contexttraining":
-                    pass
+                    self.logger("Got context!")
         @self.socketio.on("ping")
         def ping(sid, data):
             self.logger("got ping", type="alert")
@@ -180,6 +184,6 @@ class Networking:
 
         #my_logger = logging.getLogger('my-logger')
         #my_logger.setLevel(logging.ERROR)
+        self.logger("Starting server.", "alert", "blue")
+        pywsgi.WSGIServer(("0.0.0.0", 7777), self.app, handler_class=WebSocketHandler).serve_forever()
         self.logger("Started server.", "alert", "blue")
-        eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 7777)), self.app, log=None,log_output=False) #log=my_logger)
-
