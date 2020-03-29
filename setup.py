@@ -15,5 +15,7 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 # populate redis
 r.set("connectionlist", "{}")
 
+# create data folder
+os.system("mkdir data")
 # populate settings(start webserver and have them go to the settings page)
 Website().runsite(setup=True)

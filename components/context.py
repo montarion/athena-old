@@ -5,9 +5,10 @@ from time import sleep
 import pickle
 from ast import literal_eval as eval
 from components.settings import Settings
-
+from components.logger import logger as mainlogger
 class Context:
     def __init__(self):
+        self.tag = "context"
         self.datasize = 0
         self.trainingsize = 0
         self.features = []
@@ -24,6 +25,9 @@ class Context:
             self.humanfeatures = {}
 
         self.trainingfeaturesaslist = []
+
+    def logger(self, msg, type="info", colour="none"):
+        mainlogger().logger(self.tag, msg, type, colour)
 
 
     def convert(self, dataset, processtype = "predicting"):
@@ -173,6 +177,10 @@ class Context:
         graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
         graph.write_pdf("ml.pdf")
 
+
+    def handler(self, data):
+        self.logger(f"Context handler is running!")
+        self.logger(data)
 contextinput = {"system":{"charging":"true","chargingplug":"AC","batterypercentage":45},"location":{"lon":"5.242350914413443","lat":"52.102965044310885","speed":2},"network":{"name":"\"FRITZ!Box Fon WLAN 7360\"","state":"CONNECTED","type":"WIFI"}}
 
 #ml = machinelearning()

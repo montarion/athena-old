@@ -12,6 +12,7 @@ from components.modules import Modules
 from components.event import Event
 from components.logger import logger as mainlogger
 from components.transit import Transit
+from components.context import Context
 from ast import literal_eval as eval
 from engineio.payload import Payload
 #from engineio.async_drivers import gevent
@@ -147,8 +148,8 @@ class Networking:
                     if sendanime:
                         Event().anime()
                         sendanime=False
-                    #result = Transit().builder("nextbus")
-                    #self.send("card", result)
+                    result = Transit().builder("nextbus")
+                    self.send("card", result)
                     self.tasklist.remove(key)
                     self.logger("finished {}. tasklist is: {}".format(key, self.tasklist), "alert", "blue")
                 if key == "calendar":
@@ -174,6 +175,8 @@ class Networking:
                     self.logger("finished {}. tasklist is: {}".format(key, self.tasklist), "alert", "blue")
                 if key == "contexttraining":
                     self.logger("Got context!")
+                    data = data[key]
+                    Context().handler(data)
         @self.socketio.on("ping")
         def ping(sid, data):
             self.logger("got ping", type="alert")

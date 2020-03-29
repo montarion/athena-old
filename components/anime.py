@@ -10,7 +10,8 @@ class anime:
         self.p = self.r.pubsub()
         self.curdir = os.getcwd()
         self.publishchoice = "HorribleSubs"
-
+        self.fulllist = json.loads(self.r.get("siteshows").decode())
+        self.loop = False
     def logger(self, msg, type="info", colour="none"):
         mainlogger().logger(self.tag, msg, type, colour)
 
@@ -20,8 +21,10 @@ class anime:
         #feed = feedparser.parse("https://nyaa.si/?page=rss&c=1_2&f=2")
         feed = feedparser.parse(base)
         if numtocheck != 0 and type(numtocheck) == int:
-            feed.entries.reverse()
+            #feed.entries.reverse()
             numtocheck -= 1
+            self.loop = True
+            self.logger(f"GOING TO LOOP {numtocheck} TIMES!", "alert", "red")
         followlist = []
         fakelist = Settings().getsettings("Anime", "shows").split(", ")
         for show in fakelist:
@@ -35,7 +38,10 @@ class anime:
         mincutoff = index - numtocheck
         for entry in feed.entries:
             if index < mincutoff:
-                return endvalue
+                
+                msg = {"siteshows":self.fulllist}
+                self.r.set("siteshows", json.dumps(self.fulllist))
+                return endvalue, self.fulllist
             if mincutoff <= index >= 0:
                 thing = dict(entry)
                 keylist = list(thing.keys())
@@ -66,6 +72,16 @@ class anime:
                         msg = {"title":airingshow, "episode":str(epnum), "imagelink":imagelink}
                         interpretation = {"title":"title", "subtext": "episode", "main":{"image":"imagelink"}}
                         resultdict = {"data":msg, "metadata":interpretation}
+                        if len(self.fulllist) < 1:
+                            self.fulllist.append(resultdict)
+                        if self.fulllist[-1] != resultdict: 
+                            self.fulllist.append(resultdict)
+                        if self.loop:
+                            #self.fulllist.append(resultdict)
+                            self.logger(f"Working on index {index}")
+                            index -= 1
+
+                            continue
                         if check == False:
                             self.logger(f"saved anime: {airingshow}")
                             self.r.set("lastshow", json.dumps(msg))
@@ -82,15 +98,20 @@ class anime:
                         else:
                             self.logger("Already downloaded {}.".format(airingshow), "info")
                             endvalue = "empty"
+
+                        index -= 1
                     else:
-                        self.logger("Nothing new.")
-                        endvalue = "empty"
+                        if not self.loop:
+                            self.logger("Nothing new.")
+                            endvalue = "empty"
                 except Exception as e:
                     if e != AttributeError:
                         self.logger(e, "debug", "red")
                     endvalue = "empty"
+        if not self.loop:
             index -= 1
         return endvalue
+
     def getimage(self, name):
         query = "query($title: String){Media (search: $title, type: ANIME){ coverImage{large}}}" # this is graphQL, not REST
         variables = {'title': name}
@@ -102,7 +123,7 @@ class anime:
     def download(self, folder, fullname, link):
 
         #check if folder exists:
-        root =  "/media/raspidisk/files/anime/"
+        root =  "/mnt/raspidisk/files/anime/"
         truepath = os.path.join(root, "\ ".join(folder.split()))
 
         check = os.path.isdir(truepath)
@@ -117,7 +138,7 @@ class anime:
 
         precommand = "sudo -H -u pi bash -c \""
         command = (precommand + r"deluge-console 'add -p {} {}'".format(truepath, link) + "\"")
-        testcommand = ("deluge-console " + "info \"{}\"".format(self.title)).split()
+        self.logger(command, "debug", "blue")
         os.system(command)
 
     def recode(self, folder, fullname):
@@ -127,6 +148,7 @@ class anime:
         #self.logger(fullloc, "alert", "yellow")
 
     def loopthrough(self, showlist):
+        fulllist = []
         base = "https://nyaa.si/?page=rss&q=HorribleSubs+%2B+[1080p]+%2B+{}&c=1_2&f=2"
         for name in showlist:
             feed = feedparser.parse(base.format(name.replace(" ", "%20")))
@@ -157,6 +179,7 @@ class anime:
                         msg = {"title":airingshow, "episode":str(epnum), "imagelink":imagelink}
                         interpretation = {"title":"title", "subtext": "episode", "main":{"image":"imagelink"}}
                         resultdict = {"data":msg, "metadata":interpretation}
+                        fulllist.append(resultdict)
                         if check == False:
                             self.logger(f"saved anime: {airingshow}")
                             self.r.set("lastshow", json.dumps(msg))

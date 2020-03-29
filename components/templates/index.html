@@ -1,120 +1,65 @@
-<head>
-    <title>test</title>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-    <meta name="viewport" content="width = device-width, initial-scale = 1">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
-    <!--<link rel="stylesheet" href="{{url_for('static', filename='css/layout.css') }}" type="text/css"/>-->
-    <link rel="stylesheet" href="{{url_for('static', filename='css/menu.css') }}" type="text/css"/>
-    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css') }}" type="text/css"/>
-    <script src="{{url_for('static', filename='scripts/events.js') }}"><script>
-    <script src="{{url_for('static', filename='scripts/menu1.js') }}"></script>
-    <script src="{{url_for('static', filename='scripts/menu2.js') }}"></script>  
-    <script src="{{url_for('static', filename='scripts/main.js') }}"></script>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
-    
+<head>
+	<title>test</title>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<meta name="generator" content="Geany 1.32" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script type="text/javascript" src={{ url_for('static',filename='scripts/handlers.js') }}></script>
+    <script type="text/javascript" src={{ url_for('static',filename='scripts/setupnetworking.js') }}></script>
+	<script type="text/javascript" src={{ url_for('static',filename='scripts/main.js') }}></script>
+    <script type="text/javascript" src={{ url_for('static',filename='scripts/networking.js') }}></script>
+	<link rel="stylesheet" type="text/css" href={{ url_for('static',filename='css/styles.css') }}>
+
 </head>
 
 <body>
-  <div id="sidemenu-left" class="sidemenu w3-sidebar w3-bar-block">
-    <!--<a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">&times;</a>-->
-    <a href="/" class="w3-bar-item w3-button">Home</a>
-    <a href="/settings" class="w3-bar-item w3-button">Settings</a>
-  </div>
+	
+	
+	
+	<div class="maingrid">
+		<div class="topcontainer">
+	
+		<div class="topcard">
+			test<br>test2
+		</div>
+		<div class="topcard">
+			test
+		</div>
+		<div class="topcard">
+			test
+		</div>
+	</div>
+	
+		<div class="animecontainer">
+			<div class="animebar"> <!--filled by javascript, look at animehandler in handlers.js-->
+			</div>
+		</div>
+	
+		<div class="small-empty-container">
+			<div class="small-empty-one">
+				<div>test1ngurofdsufosdhfsh</div>
+				<div>test2</div>
+			</div>
+		
+			<div class="small-empty-two">
+				<div>test1</div>
+				<div>test2</div>
+			</div>
+		</div>
 
-
-
-  <div id="sidemenu-right" class="sidemenu w3-sidebar w3-bar-block">
-    <div id="sidebar" class="sidebar">
-    </div>
-  </div>
-
-  <div class="main">
-  <div id="notificationbutton" onclick="openMenuRight()" class="notification hidden">
-    <span class="badge"></span>
-  </div>
-
-  <div class="headbar">
-      <div class="column">
-        <div class="card" id="glow">
-          <div class="cardcontent motd-news">
-            <p>here comes news</p>
-          </div>
-        </div>
-      </div>
-  </div>
-  <div class="statbar">
-      <div class="column">
-        <div class="card" id="glow">
-          <div class="cardcontent sysstats">
-            <h3>stats</h3>
-            <p>Some stats</p>
-            <p>Some more stats</p>
-          </div>
-        </div>
-      </div>    
-  </div>
-  <hr>
-  <div class="full-1">
-    <div class="column">
-      <div class="card image" id="glow">
-        <div class="cardcontent image">
-          <a id="motd-image-link" href=""><img id="motd-image" src="https://i.redd.it/w2wd89bk9ab31.jpg" /></a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="full-2">
-    <div class="column">
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-    
-      <div class="card" id="glow">
-        <div class="cardcontent agenda">
-          you have stuff to do, probably
-        </div>
-      </div>
-    
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="full-3">
-    <div class="column">
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-    
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-    
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-      <div class="card" id="glow">
-        <div class="cardcontent anime">
-          and another one
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-  </div>
-
+		<div class="large-empty-container">
+			<div class="large-empty-one">
+				<video class="bigpicture" src="bigpicture.mp4" alt="[source]" loop autoplay controls>
+			</div>
+		</div>
+	</div>
+	
+	
+	
 </body>
-</html>
 
+</html>

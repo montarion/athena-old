@@ -26,7 +26,7 @@ class Event:
         result["anime"] = resultdict
         self.send("notification", notimsg)
         self.send("card", result)
-        self.logger("Done with anime!", "debug", "blue")
+
 
     def buildnotification(self, notititle, notitext):
         category = "notification"
@@ -34,7 +34,6 @@ class Event:
         return message
 
     def send(self, category, message):
-        self.logger(message, "debug", "yellow")
         data = json.dumps({category:message})
         self.socketio.emit("message", data)
         self.logger("sent message: "+str(message))

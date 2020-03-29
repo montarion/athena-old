@@ -1,4 +1,6 @@
-var socket;
+
+function setupnetwork(resolve, reject){
+
 $(document).ready(function() {
     var viewportwidth = $(window).width();
     var viewportheight = $(window).height();
@@ -6,23 +8,14 @@ $(document).ready(function() {
     console.log("started setup networking script");
 
 if (firstupdate == false){
+    //var socket;
     socket = io.connect();
+    socket.connect();
+    console.log(socket.connected)
+    console.log("Connected!");
     firstupdate = true;
-  };
-  socket.on("message", function(msg){
-    console.log(msg);
-  });
-  socket.on("disconnect", function(msg){
-    console.log("DISCONNECTED");
-    console.log("disconnected");
-  });
-  socket.on("bussetup", function(msg){
-    console.log(msg);
-    localStorage.setItem("busstops", JSON.stringify(msg))
-  });
+    //mainnetworking(socket);
+    resolve(socket)
+};
 });
-
-function sendmsg(msg){
-    socket.emit("setupupdate", msg);
 }
-

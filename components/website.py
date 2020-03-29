@@ -1,3 +1,4 @@
+
 from gevent import monkey
 monkey.patch_socket()
 # Be sure to only patch the socket library!
@@ -12,22 +13,11 @@ from components.transit import Transit
 from ast import literal_eval as eval
 import datetime, os, logging, threading, traceback, redis, json, configobj, socket
 
-
 class Website:
     def __init__(self):
         self.tag = "website"
         self.config = configobj.ConfigObj("settings.ini")
-        #self.categories = list(self.config["ENABLED MODULES"].keys())
-        self.settingdict = {"appID": "password-location", "appCode": "password-location", "anime": "anime",
-                            "redditUsername": "password-reddit", "redditClientId":"password-reddit",
-                            "redditClientSecret":"password-reddit", "redditPassword": "password-reddit",
-                            "gatekeeper":"gatekeeper"}
-        self.updatesettinglist = ["anime", "appID", "appCode", "gatekeeper", "redditUsername", "redditClientId",
-                                  "redditClientSecret", "redditPassword"]
         self.app = Flask(__name__)
-        log = logging.getLogger('werkzeug')
-        log.disabled = False
-        self.app.logger.disabled = False
         self.socketio = SocketIO(self.app, message_queue='redis://localhost',async_mode="gevent")
         self.r = redis.Redis(host='localhost', port=6379, db=0)
         # colours
@@ -39,79 +29,6 @@ class Website:
 
     def logger(self, msg, type="info", colour="none"):
         mainlogger().logger(self.tag, msg, type, colour)
-        
-
-    def setupupdate(self, typelist):
-        print(typelist)
-        for category in typelist:
-            base = typelist[category]
-            if category == "greeting":
-                fname = base["fname"]
-                lname = base["lname"]
-                street = base["street"]
-                city = base["city"]
-                addressdict = Location().getaddress(street + " " + city)
-                print("{} lives in {}".format(fname, city))
-                setdict = {"firstname": fname,"lastname": lname, "Address":addressdict}
-                Settings().setsettings({"Personalia": setdict})
-                self.logger("Wrote personalia to file!", "info", "green")
-            if category == "busstops":
-                self.logger("Got busstop request", "debug", "yellow")
-                busdict = Transit().getbusstops()
-                self.socketio.emit("bussetup", busdict)
-    def update(self, typelist):
-            for category in typelist:
-                if category == "anime":
-                    self.logger("Getting anime from database", "info", "yellow")
-                    anime().search()
-                    animelist = self.r.get("lastshow")
-                    animelist = animelist.decode()
-                    self.socketio.emit("anime", animelist)
-                if category == "motd":
-                    self.logger("Getting motd from database", "info", "yellow")
-                    imagelink = self.r.get("image")
-                    self.logger("Getting image", "debug", "yellow")
-                    imagelink = imagelink.decode()
-                    self.socketio.emit("image", imagelink)
-
-                    self.logger("Getting news", "debug", "yellow")
-                    news = self.r.get("news")
-                    news = news.decode()
-                    self.logger(news, "alert", "yellow")
-                    self.logger(type(news), "alert", "yellow")
-                    news = eval(news)
-                    self.logger(news, "alert", "yellow")
-                    self.logger(type(news), "alert", "yellow")
-                    #news = json.dumps(news)
-                    self.socketio.emit("news", news)
-
-                    self.logger("Getting song", "debug", "yellow")
-                    songdict = self.r.get("song")
-                    songdict = songdict.decode()
-                    self.socketio.emit("song", songdict)
-
-                    self.logger("Getting temperature", "debug", "yellow")
-                    #temperature = self.r.get("weather")
-                    #temperature = temperature.decode()
-                    #self.socketio.emit("weather", temperature)
-
-                    self.logger("Getting agenda", "debug", "yellow")
-                    agenda = dict(json.loads(self.r.get("motd").decode()))["agenda"]
-                    self.socketio.emit("agenda", agenda)
-                    self.logger("running motd", "debug", "red")
-                if category == "settings":
-                    # get settings with values in a dict
-                    self.logger("Updating settings.")
-                    categorylist = ["Anime", "Gatekeeper", "Credentials"]
-                    settingdict = {}
-                    for cat in categorylist:
-                        result = Settings().getsettings(cat)
-                        settingdict.update(result)
-                    msg = {"values":settingdict}
-                    self.socketio.emit("settings", msg)
-                #if category == "event":
-                    #self.socketio.emit("event
-            #motdlst = motd().createmotd(weather="no")
 
     def runsite(self, setup=False):
         indexpath = "/"
@@ -119,8 +36,6 @@ class Website:
             indexpath = "/jklfhdsljkfhdsjklfhsdjlk" # random
         @self.app.route(indexpath)
         def index():
-            #threading.Thread(target=anime().search, args=(False,)).start()
-            #threading.Thread(target=motd().createmotd, kwargs={"weather":"no"}).start()
             return render_template('index.html')
 
         @self.app.route("/settings")
@@ -140,20 +55,42 @@ class Website:
         def setup():
             return render_template('setup.html')
 
+        @self.socketio.on("connect")
+        def onconnect():
+            print("got connected!")
+            emit("message", {"data": "test string"})
+            print("msg sent")
 
-        @self.socketio.on("setupupdate")
-        def setupupdate(data):
-            threading.Thread(target=self.setupupdate, args=(data,)).start()
+        @self.socketio.on("echo")
+        def onmessage(message):
+            message = json.loads(message)
+            emit("message", {"echo":message})
+
+        @self.socketio.on("message")
+        def onmessage(message):
+            self.logger(f"pure message: {message}")
+            message = json.loads(str(message))
+            self.logger(message)
 
         @self.socketio.on("update")
-        def update(data):
-            data = eval(data)
-            threading.Thread(target=self.update, args=(data,)).start()
-
-
-        @self.socketio.on("settingupdate")
-        def settingupdate(msg):
-            Settings().setsettings(msg)
-            self.logger("settings have been updated.", "info", "green")
+        def onupdatemessage(message):
+            self.logger(f"pure message: {message}")
+            message = json.loads(str(message))
+            self.logger(message)
+            for key in list(message):
+                if key == "anime":
+                    siteshowlist = json.loads(self.r.get("siteshows").decode())
+                    self.logger(siteshowlist)
+                    if len(siteshowlist) < 1:
+                        # run anime
+                        anime().search(check=True,numtocheck=7)
+                        # then get it after all
+                        siteshowlist = json.loads(self.r.get("siteshows").decode())
+                        self.logger("updated siteshow list")
+                    siteshowlist.reverse() # get most recent first
+                    for show in siteshowlist:
+                        self.logger(show["data"]["title"])
+                    emit("animeupdate", siteshowlist[:7])
+                    siteshowlist.reverse() # make list normal again
 
         self.socketio.run(self.app, host='0.0.0.0', port=8000)

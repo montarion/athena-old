@@ -1,3 +1,5 @@
+-- THIS PROJECT IS MOVED TO ATHENA V4.0
+
 Welcome to athena v3.0
 
 The goal of this project is to create a personal assistant running on a raspberry pi.
